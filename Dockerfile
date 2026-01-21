@@ -76,7 +76,7 @@ ENV TORCH_CUDA_ARCH_LIST="12.0;12.1"
 ENV HF_HOME=/root/.cache/huggingface
 
 # Use local repos
-# ENV PYTHONPATH=/workspace/flashinfer:/workspace/vllm
+ENV PYTHONPATH=/workspace/flashinfer:/workspace/vllm
 
 WORKDIR /workspace
 
