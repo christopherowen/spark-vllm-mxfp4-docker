@@ -76,7 +76,7 @@ ENV TORCH_CUDA_ARCH_LIST="12.0;12.1"
 ENV HF_HOME=/root/.cache/huggingface
 
 # Use local repos
-ENV PYTHONPATH=/workspace/flashinfer:/workspace/vllm
+# ENV PYTHONPATH=/workspace/flashinfer:/workspace/vllm
 
 WORKDIR /workspace
 
@@ -189,6 +189,9 @@ RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
 RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
     uv pip install fastsafetensors llama-benchy
 
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
+    uv pip install openai-harmony
+
 # =============================================================================
 # Download tiktoken encodings (cached)
 # =============================================================================
@@ -206,6 +209,31 @@ RUN --mount=type=cache,id=tiktoken-cache,target=/tiktoken-cache \
             "https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken" && \
         cp /tiktoken-cache/*.tiktoken /workspace/tiktoken_encodings/; \
     fi
+
+
+
+# Cache Harmony vocab during build so runtime doesn't need network
+ENV OPENAI_HARMONY_CACHE_DIR=/workspace/harmony_cache
+ENV TIKTOKEN_ENCODINGS_BASE=/workspace/tiktoken_encodings
+
+
+RUN mkdir -p ${OPENAI_HARMONY_CACHE_DIR} && \
+    python3 - <<'PY'
+import os
+os.environ["OPENAI_HARMONY_CACHE_DIR"] = os.environ.get("OPENAI_HARMONY_CACHE_DIR","/workspace/harmony_cache")
+from openai_harmony import load_harmony_encoding, HarmonyEncodingName
+enc = load_harmony_encoding(HarmonyEncodingName.HARMONY_GPT_OSS)
+print("harmony vocab ok:", enc.name)
+PY
+
+
+# Uninstall opencv if present, and remove any .pth that injects /cv2 into sys.path
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
+    uv pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python 2>/dev/null || true && \
+    rm -f /usr/local/lib/python3.12/dist-packages/*opencv*.pth \
+          /usr/local/lib/python3.12/dist-packages/*cv2*.pth 2>/dev/null || true 
+
+RUN python3 -m pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python 2>/dev/null || true
 
 # =============================================================================
 # Create entrypoint script (validation only)
