@@ -111,6 +111,9 @@ services:
     image: vllm-dev:latest
     container_name: vllm-serve
     
+    # Use host networking for multi-node Ray/NCCL
+    network_mode: host
+    
     deploy:
       resources:
         reservations:
@@ -120,12 +123,19 @@ services:
               capabilities: [gpu]
     ipc: host
     
+    # RDMA device access for NCCL IB/RoCE transport
+    devices:
+      - /dev/infiniband:/dev/infiniband
+    
+    # IPC_LOCK required for RDMA memory pinning
+    cap_add:
+      - IPC_LOCK
+    
     ulimits:
       memlock: -1
       stack: 67108864
     
-    ports:
-      - "8000:8000"
+    # No port mapping needed with network_mode: host
     
     volumes:
       - ~/projects/vllm:/workspace/vllm

@@ -2,7 +2,7 @@
 # Docker Compose for GPT-OSS-120B with MXFP4 on DGX Spark (SM121/GB10)
 # =============================================================================
 #
-# Achieves 59.4 tok/s decode with CUTLASS MXFP4 kernel.
+# Achieves 72 tok/s decode with TP=2 RDMA, 60 tok/s with TP=1.
 #
 # Usage:
 #   docker compose build                 # Build the image
@@ -48,6 +48,14 @@ services:
     # Shared memory for CUDA IPC
     ipc: host
     
+    # RDMA device access for NCCL IB/RoCE transport (enables TP=2 at 72 tok/s)
+    devices:
+      - /dev/infiniband:/dev/infiniband
+    
+    # IPC_LOCK required for RDMA memory pinning
+    cap_add:
+      - IPC_LOCK
+    
     # Resource limits
     ulimits:
       memlock: -1
@@ -73,6 +81,11 @@ services:
       
       # Tiktoken encodings
       - TIKTOKEN_ENCODINGS_BASE=/workspace/tiktoken_encodings
+      
+      # NCCL settings for multi-node TP=2 (uncomment and adjust for your network)
+      # - NCCL_SOCKET_IFNAME=enp1s0f1np1  # Your network interface
+      # - NCCL_IB_DISABLE=0               # Enable InfiniBand/RoCE
+      # - NCCL_IB_HCA=rocep1s0f1          # Your RoCE device (from ibdev2netdev)
       
       # Optional: HuggingFace token for gated models
       # - HF_TOKEN=${HF_TOKEN}
