@@ -10,5 +10,10 @@ echo "=============================================="
 
 docker exec -i vllm-dev bash -c "
 ray stop --force
+
+# Clean up stale Ray state that --force leaves behind
+rm -rf /tmp/ray/session_* 2>/dev/null && echo 'Cleaned up stale Ray sessions'
+rm -f /dev/shm/sem.loky-* 2>/dev/null && echo 'Cleaned up stale semaphores'
+
 echo 'Ray stopped.'
 "
