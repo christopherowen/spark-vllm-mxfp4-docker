@@ -4,9 +4,58 @@ Live tracking of benchmark results across configurations.
 
 ---
 
-## 🏆 Final Results (2026-01-17)
+## 🏆 Latest Results: TP=2 with RDMA (2026-01-28)
 
-**Mission Accomplished**: vLLM is now the fastest inference engine for gpt-oss-120b on DGX Spark.
+**New Record!** Two-node tensor parallelism with proper RDMA/RoCE transport achieves **72 tok/s decode** - 20% faster than single-node!
+
+| Configuration | Prefill (t/s) | Decode tg32 (t/s) | Decode tg128 (t/s) |
+|---------------|---------------|-------------------|---------------------|
+| **TP=2 RDMA** | **6,329** | **72.71** | **71.43** |
+| TP=1 (single node) | 4,573 | 60.02 | 60.07 |
+
+### Key Fix: `/dev/infiniband` Device Mount
+
+The critical fix was exposing RDMA devices to the Docker container:
+
+```yaml
+# docker-compose.dev.yml
+devices:
+  - /dev/infiniband:/dev/infiniband
+cap_add:
+  - IPC_LOCK
+```
+
+### NCCL Transport Verification
+
+```
+# BEFORE (falling back to TCP sockets - slow):
+NCCL INFO NET/Socket : Using [0]enp1s0f1np1...
+
+# AFTER (using RDMA/RoCE - fast):
+NCCL INFO NET/IB : Using [0]rocep1s0f1:1/RoCE...
+```
+
+### Environment Variables
+
+```bash
+export NCCL_SOCKET_IFNAME=enp1s0f1np1
+export NCCL_IB_DISABLE=0
+export NCCL_IB_HCA=rocep1s0f1
+```
+
+### Coherency Validation
+
+All 16 coherency tests passed across short (2K), medium (16K), and long (80K) contexts:
+- Geography: 4/4 ✓
+- Math: 4/4 ✓
+- Science: 4/4 ✓  
+- Code: 4/4 ✓
+
+---
+
+## TP=1 Results (2026-01-17)
+
+Single-node baseline for comparison.
 
 | Context | Prefill (t/s) | Decode tg32 (t/s) | Decode tg128 (t/s) |
 |---------|---------------|-------------------|---------------------|
@@ -20,7 +69,8 @@ Live tracking of benchmark results across configurations.
 |--------|--------------|--------|
 | SGLang | 52 | ✅ Beat by 10-15% |
 | llama.cpp | 58 | ✅ Beat at short/medium context |
-| **vLLM (this)** | **57-60** | **Winner** |
+| **vLLM TP=1** | **57-60** | **Winner** |
+| **vLLM TP=2 RDMA** | **72** | **New Champion** |
 
 ### Key Optimizations
 
@@ -28,6 +78,7 @@ Live tracking of benchmark results across configurations.
 2. ✅ **CUTLASS FP8×FP4 MoE GEMM** on SM121
 3. ✅ **MXFP4 quantization** for MoE, QKV, O, and lm_head layers
 4. ✅ **FlashInfer FA2 attention** with sink support
+5. ✅ **RDMA/RoCE transport** for multi-node TP (2026-01-28)
 
 ---
 

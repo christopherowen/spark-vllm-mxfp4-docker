@@ -280,6 +280,15 @@ sed -i "/flashinfer/d" requirements/cuda.txt 2>/dev/null || true
 uv pip install -r requirements/build.txt -q
 uv pip install -r requirements/cuda.txt -q 2>/dev/null || true
 
+# Force CUDA arch to SM120/SM121 only (DGX Spark)
+# This MUST be set to avoid compiling for SM80/SM89/SM90 which wastes time
+export TORCH_CUDA_ARCH_LIST="12.0;12.1"
+export VLLM_TARGET_DEVICE="cuda"
+
+# Reduce parallelism for CUTLASS kernels (very memory hungry)
+# 8 jobs is a good balance for 120GB systems
+export MAX_JOBS=8
+
 if [ -f "$CACHED_WHEEL" ] && [ "$1" != "--force" ]; then
     # Fast path: use cached wheel from previous build
     echo "Found cached wheel for commit $COMMIT"
@@ -288,18 +297,20 @@ if [ -f "$CACHED_WHEEL" ] && [ "$1" != "--force" ]; then
     VLLM_PRECOMPILED_WHEEL_LOCATION="$CACHED_WHEEL" uv pip install --no-build-isolation -e .
 else
     # Slow path: compile and build wheel
-    echo "Compiling vLLM (commit $COMMIT)..."
+    echo "Compiling vLLM for SM120/SM121 (commit $COMMIT)..."
+    echo "  TORCH_CUDA_ARCH_LIST=$TORCH_CUDA_ARCH_LIST"
+    echo "  MAX_JOBS=$MAX_JOBS"
+    echo "  ccache stats: $(ccache -s 2>/dev/null | grep 'cache hit rate' || echo 'N/A')"
     
-    export TORCH_CUDA_ARCH_LIST="12.0;12.1"
-    uv pip install --no-build-isolation -e .
+    uv pip install --no-build-isolation -e . -v 2>&1 | tee /tmp/vllm-build.log
     
     # Build and cache wheel for future fast installs
     echo "Caching wheel for future installs..."
-    python setup.py bdist_wheel --dist-dir="$WHEEL_CACHE"
+    python setup.py bdist_wheel --dist-dir="$WHEEL_CACHE" 2>/dev/null || true
     # Rename to include commit hash
     BUILT_WHEEL=$(ls -t "$WHEEL_CACHE"/*.whl 2>/dev/null | head -1)
     if [ -n "$BUILT_WHEEL" ] && [ "$BUILT_WHEEL" != "$CACHED_WHEEL" ]; then
-        mv "$BUILT_WHEEL" "$CACHED_WHEEL"
+        mv "$BUILT_WHEEL" "$CACHED_WHEEL" 2>/dev/null || true
     fi
 fi
 

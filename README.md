@@ -1,8 +1,16 @@
 # GPT-OSS-120B with MXFP4 on DGX Spark (SM121/GB10)
 
-**Fastest gpt-oss-120b inference on DGX Spark** - 57-60 tok/s decode, beating SGLang and llama.cpp.
+**Fastest gpt-oss-120b inference on DGX Spark** - **72 tok/s decode with TP=2**, beating all competitors.
 
 ## Benchmark Results
+
+### TP=2 (Two-Node with RDMA) - New Record!
+
+| Context | Prefill (t/s) | Decode tg32 (t/s) | Decode tg128 (t/s) |
+|---------|---------------|-------------------|---------------------|
+| **2048** | **6,329** | **72.71** | **71.43** |
+
+### TP=1 (Single Node)
 
 | Context | Prefill (t/s) | Decode tg32 (t/s) | Decode tg128 (t/s) |
 |---------|---------------|-------------------|---------------------|
@@ -12,17 +20,19 @@
 
 ### Key Observations
 
-- ✅ Decode consistently **57-60 tok/s** across all context lengths
+- ✅ **TP=2 with RDMA achieves 72 tok/s** - 20% faster than single-node
+- ✅ Proper `/dev/infiniband` device mount enables RoCE transport
+- ✅ Decode consistently **57-60 tok/s** on TP=1 across all context lengths
 - ✅ Prefill scales well: 1.8K → 4.6K → 6.6K t/s as batch size increases
-- ✅ Long context (8K) only ~3% decode slowdown vs short context
 
 ### vs Competitors
 
 | Engine | Decode (t/s) | Status |
 |--------|--------------|--------|
-| SGLang | 52 | ✅ Beat by 10-15% |
-| llama.cpp | 58 | ✅ Beat at short/medium context |
-| **vLLM (this)** | **57-60** | **Winner** |
+| SGLang | 52 | ✅ Beat by 38% (TP=2) |
+| llama.cpp | 58 | ✅ Beat by 24% (TP=2) |
+| **vLLM TP=1** | **57-60** | Previous best |
+| **vLLM TP=2 RDMA** | **72** | **New Champion** |
 
 See the [discussion on NVIDIA Developer Forums](https://forums.developer.nvidia.com/t/vllm-on-gb10-gpt-oss-120b-mxfp4-slower-than-sglang-llama-cpp-what-s-missing/356651/18) for more details.
 
@@ -260,6 +270,6 @@ sudo rm -rf .cache/
 
 | Component | SHA | Repository |
 |-----------|-----|------------|
-| vLLM | `045293d8` | [christopherowen/vllm](https://github.com/christopherowen/vllm/tree/mxfp4_v2) |
+| vLLM | `45954168` | [christopherowen/vllm](https://github.com/christopherowen/vllm/tree/mxfp4_v2) |
 | FlashInfer | `1660ee8d` | [christopherowen/flashinfer](https://github.com/christopherowen/flashinfer/tree/mxfp4_v2) |
 | CUTLASS | `11af7f02` | [christopherowen/cutlass](https://github.com/christopherowen/cutlass/tree/mxfp4_v2) |
