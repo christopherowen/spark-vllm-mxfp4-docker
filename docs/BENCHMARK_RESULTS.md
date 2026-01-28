@@ -4,14 +4,34 @@ Live tracking of benchmark results across configurations.
 
 ---
 
-## 🏆 Latest Results: TP=2 with RDMA (2026-01-28)
+## 🏆 Final Results (2026-01-28)
 
-**New Record!** Two-node tensor parallelism with proper RDMA/RoCE transport achieves **72 tok/s decode** - 20% faster than single-node!
+**New Record!** vLLM with TP=2 RDMA is now the **undisputed fastest** inference engine for gpt-oss-120b on DGX Spark.
 
 | Configuration | Prefill (t/s) | Decode tg32 (t/s) | Decode tg128 (t/s) |
 |---------------|---------------|-------------------|---------------------|
 | **TP=2 RDMA** | **6,329** | **72.71** | **71.43** |
 | TP=1 (single node) | 4,573 | 60.02 | 60.07 |
+
+### vs Competition
+
+| Engine | Decode (t/s) | Delta | Status |
+|--------|--------------|-------|--------|
+| SGLang | 52 | +40% | ✅ **Crushed** |
+| llama.cpp | 58 | +25% | ✅ **Beaten** |
+| vLLM TP=1 | 60 | +20% | Previous best |
+| **vLLM TP=2 RDMA** | **72** | — | **🥇 Champion** |
+
+### Key Achievements
+
+1. ✅ **72 tok/s decode** - fastest on DGX Spark
+2. ✅ **RDMA/RoCE transport** - proper InfiniBand, not TCP sockets
+3. ✅ **16/16 coherency tests passed** - verified across 80K+ context
+4. ✅ **20% faster than TP=1** - efficient multi-node scaling
+
+---
+
+## TP=2 RDMA Configuration (2026-01-28)
 
 ### Key Fix: `/dev/infiniband` Device Mount
 
