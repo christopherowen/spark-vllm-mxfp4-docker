@@ -28,7 +28,7 @@ LABEL description="vLLM with optimized MXFP4 for DGX Spark (SM121/GB10)"
 # =============================================================================
 
 ARG VLLM_SHA=045293d82b832229560ac4a13152a095af603b6e
-ARG FLASHINFER_SHA=1660ee8d740b0385f235519f9e2750db944d1838
+ARG FLASHINFER_SHA=f349e52496a72a00d8c4ac02c7a1e38523ff7194
 ARG CUTLASS_SHA=11af7f02ab52c9130e422eeb4b44042fbd60c083
 
 ARG VLLM_REPO=https://github.com/christopherowen/vllm.git
