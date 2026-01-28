@@ -20,8 +20,7 @@
 
 ### Key Observations
 
-- ✅ **TP=2 with RDMA achieves 72 tok/s** - 20% faster than single-node
-- ✅ Proper `/dev/infiniband` device mount enables RoCE transport
+- ✅ **TP=2 achieves 72 tok/s** - 20% faster than single-node
 - ✅ Decode consistently **57-60 tok/s** on TP=1 across all context lengths
 - ✅ Prefill scales well: 1.8K → 4.6K → 6.6K t/s as batch size increases
 
