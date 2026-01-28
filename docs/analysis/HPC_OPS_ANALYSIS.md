@@ -267,7 +267,7 @@ Our decode attention (M=1 typically) could benefit from a specialized "M=1" kern
 | **Load/Compute Overlap** | Explicit warp specialization | CUTLASS implicit | Minor |
 | **TMA** | Dynamic descriptor updates | Fixed descriptors | Minor |
 | **Precision** | FP8 E4M3 | FP8×FP4 (MXFP4) | Different |
-| **Activation Fusion** | SiLU + quant fused | SiLU fused, quant separate | **Gap** |
+| **Activation Fusion** | SiLU + quant fused | SiLU + quant fused for FP4/FP8 ✅ | **None** |
 | **Small-M Reductions** | 4-lane/8-lane specialized | Full 32-lane warp | **Gap** |
 
 ---
@@ -286,12 +286,17 @@ Our decode attention (M=1 typically) could benefit from a specialized "M=1" kern
 
 ### High Priority (Actual Gaps)
 
-1. **Fuse Activation + Quantization in MoE**
-   - Current: SiLU is fused with GEMM epilogue via CUTLASS, but NOT with FP8 quantization
-   - FlashInfer's `doGatedActivationKernel` (line 2003-2055 in cutlass_fused_moe_kernels.cuh) is separate
-   - hpc-ops: `act_mul_and_quant_async` combines SiLU + FP8 quant in one kernel
-   - **Gap: Extra memory round-trip between gate_up GEMM → activation → down GEMM**
-   - Expected: 5-15% MoE decode speedup
+1. ~~**Fuse Activation + Quantization in MoE**~~ ✅ **Already Implemented!**
+   - FlashInfer's `doActivationKernel` (lines 2081-2287) **already fuses SiLU with FP4/FP8 quantization**
+   - See lines 2208-2218:
+     ```cpp
+     if constexpr (IsNVFP4 || IsMXFP8) {
+       auto res = quantizePackedFPXValue<GemmOutputType, T, ComputeElem, VecSize>(
+           post_act_val, global_scale_val, ...);
+       output_vec[elem_index] = res;
+     }
+     ```
+   - The older `doGatedActivationKernel` (BF16→BF16) is only used for non-quantized paths
 
 2. **Small-M Warp Reductions for Decode Attention**
    - FlashInfer uses full 32-lane warp reductions everywhere
@@ -362,27 +367,29 @@ __device__ __forceinline__ float warp_4lane_reduce_sum_xor(float x) {
 }
 ```
 
-### Main Gap: Fused SiLU + Quantization
+### ~~Main Gap: Fused SiLU + Quantization~~ ✅ Already Implemented
 
-hpc-ops fuses activation and quantization:
+**Correction:** FlashInfer already fuses activation with quantization for FP4/FP8:
+
 ```cpp
-// hpc-ops: Single kernel
-void act_mul_and_quant_async(
-    T2* output_fp8,           // Output: FP8 quantized
-    const T1* input_bf16,     // Input: BF16 from gate_up GEMM
-    const float* scale,
-    ...
-);
+// FlashInfer csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh
+// Lines 2206-2218 in doActivationKernel:
+
+auto post_act_val = gate_act * quant_scale;  // SiLU already applied
+
+if constexpr (IsNVFP4 || IsMXFP8) {
+  // Fused quantization in same kernel!
+  auto res = quantizePackedFPXValue<GemmOutputType, T, ComputeElem, VecSize>(
+      post_act_val, global_scale_val, num_tokens_before_expert, expert, token, elem_index,
+      inter_size, fc2_act_sf_flat,
+      IsNVFP4 ? TmaWarpSpecializedGroupedGemmInput::FpXBlockScalingType::NVFP4
+              : TmaWarpSpecializedGroupedGemmInput::FpXBlockScalingType::MXFPX);
+  output_vec[elem_index] = res;
+}
 ```
 
-FlashInfer has separate kernels:
-```cpp
-// FlashInfer: Separate steps (extra memory traffic)
-// 1. GEMM with SiLU epilogue → BF16 intermediate
-// 2. Separate FP8 quantization kernel
-```
-
-A fused kernel would eliminate the BF16 intermediate write/read.
+The `doGatedActivationKernel` (BF16→BF16) is only used for non-quantized paths.
+Our MXFP4 path uses `doActivationKernel` which already has fused activation + quantization.
 
 ---
 
