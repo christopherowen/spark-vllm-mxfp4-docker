@@ -171,6 +171,82 @@ See `docker-compose.yml` for full configuration.
 
 ---
 
+## Multi-Node TP=2 Setup
+
+To achieve 72 tok/s with two-node tensor parallelism:
+
+### Prerequisites
+
+- Two DGX Spark nodes connected via ConnectX-7 (200Gbps)
+- `/dev/infiniband` devices available on both nodes
+- Same model cached on both nodes
+
+### 1. Configure RDMA (Critical!)
+
+The key fix is exposing InfiniBand devices to Docker:
+
+```yaml
+# docker-compose.yml already includes:
+devices:
+  - /dev/infiniband:/dev/infiniband
+cap_add:
+  - IPC_LOCK
+```
+
+### 2. Set NCCL Environment Variables
+
+```bash
+# Find your network interface and RoCE device
+ip addr show  # e.g., enp1s0f1np1
+ibdev2netdev  # e.g., rocep1s0f1 port 1 ==> enp1s0f1np1
+
+# Set on both nodes
+export NCCL_SOCKET_IFNAME=enp1s0f1np1
+export NCCL_IB_DISABLE=0
+export NCCL_IB_HCA=rocep1s0f1
+```
+
+### 3. Start Ray Cluster
+
+**On head node:**
+```bash
+docker compose -f docker-compose.dev.yml exec dev bash
+ray start --head --port=6379
+```
+
+**On worker node:**
+```bash
+docker compose -f docker-compose.dev.yml exec dev bash
+ray start --address=<head-ip>:6379
+```
+
+### 4. Run vLLM with TP=2
+
+```bash
+vllm serve openai/gpt-oss-120b \
+    --quantization mxfp4 \
+    --mxfp4-backend CUTLASS \
+    --mxfp4-layers moe,qkv,o,lm_head \
+    --tensor-parallel-size 2 \
+    --attention-backend FLASHINFER \
+    --kv-cache-dtype fp8
+```
+
+### Verify RDMA is Working
+
+Check NCCL logs for RoCE transport:
+```bash
+# Good (RDMA):
+NCCL INFO NET/IB : Using [0]rocep1s0f1:1/RoCE...
+
+# Bad (falling back to TCP):
+NCCL INFO NET/Socket : Using [0]enp1s0f1np1...
+```
+
+See [docs/NCCL_TUNING_TP2.md](docs/NCCL_TUNING_TP2.md) for advanced tuning options.
+
+---
+
 ## Development
 
 For development with local FlashInfer/vLLM repos:
@@ -256,6 +332,8 @@ sudo rm -rf .cache/
 - [AGENTS.md](AGENTS.md) - Project context and AI assistant guide
 - [docs/reference/](docs/reference/) - Technical deep dive (SM121 architecture, CUTLASS details)
 - [docs/plans/](docs/plans/) - Feature implementation documentation
+- [docs/NCCL_TUNING_TP2.md](docs/NCCL_TUNING_TP2.md) - NCCL tuning for multi-node TP=2
+- [docs/BENCHMARK_RESULTS.md](docs/BENCHMARK_RESULTS.md) - Full benchmark history
 
 ### Competitor Analysis
 
