@@ -260,7 +260,10 @@ RUN cat > /workspace/install-vllm.sh << 'EOF'
 set -e
 cd /workspace/vllm
 
-# Fast path: check if BOTH import AND CLI work (~10s check)
+WHEEL_CACHE="/root/.cache/vllm/wheels"
+mkdir -p "$WHEEL_CACHE"
+
+# Fast path: check if BOTH import AND CLI work
 if [ "$1" != "--force" ]; then
     if python -c "from vllm.entrypoints.openai.api_server import run_server" 2>/dev/null && command -v vllm &>/dev/null; then
         echo "✓ vLLM ready"
@@ -268,40 +271,42 @@ if [ "$1" != "--force" ]; then
     fi
 fi
 
-SO_COUNT=$(find /workspace/vllm/vllm -name "*.so" 2>/dev/null | wc -l)
+# Get current commit hash for wheel matching
+COMMIT=$(git rev-parse --short HEAD)
+CACHED_WHEEL="$WHEEL_CACHE/vllm-${COMMIT}.whl"
 
-if [ "$SO_COUNT" -gt 0 ] && [ "$1" != "--force" ]; then
-    # Already compiled - install using VLLM_USE_PRECOMPILED to skip recompilation (~30-60s)
-    echo "Found $SO_COUNT compiled extensions"
-    echo "Installing vLLM (using existing .so files)..."
+python3 use_existing_torch.py
+sed -i "/flashinfer/d" requirements/cuda.txt 2>/dev/null || true
+uv pip install -r requirements/build.txt -q
+uv pip install -r requirements/cuda.txt -q 2>/dev/null || true
+
+if [ -f "$CACHED_WHEEL" ] && [ "$1" != "--force" ]; then
+    # Fast path: use cached wheel from previous build
+    echo "Found cached wheel for commit $COMMIT"
+    echo "Installing vLLM from cached wheel..."
     
-    python3 use_existing_torch.py
-    sed -i "/flashinfer/d" requirements/cuda.txt 2>/dev/null || true
-    uv pip install -r requirements/build.txt -q
-    uv pip install -r requirements/cuda.txt -q 2>/dev/null || true
-    
-    # VLLM_USE_PRECOMPILED=1 tells setup.py to skip compilation
-    VLLM_USE_PRECOMPILED=1 uv pip install --no-build-isolation -e .
-    
-    # Remove opencv (causes circular import with typing module in Ray workers)
-    pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python 2>/dev/null || true
-    
-    echo "✓ vLLM ready"
+    VLLM_PRECOMPILED_WHEEL_LOCATION="$CACHED_WHEEL" uv pip install --no-build-isolation -e .
 else
-    # Not compiled - compile it (~10-30 min)
-    echo "Compiling vLLM..."
+    # Slow path: compile and build wheel
+    echo "Compiling vLLM (commit $COMMIT)..."
     
-    python3 use_existing_torch.py
-    sed -i "/flashinfer/d" requirements/cuda.txt 2>/dev/null || true
-    uv pip install -r requirements/build.txt
     export TORCH_CUDA_ARCH_LIST="12.0;12.1"
     uv pip install --no-build-isolation -e .
     
-    # Remove opencv (causes circular import with typing module in Ray workers)
-    pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python 2>/dev/null || true
-    
-    echo "✓ vLLM compiled and installed"
+    # Build and cache wheel for future fast installs
+    echo "Caching wheel for future installs..."
+    python setup.py bdist_wheel --dist-dir="$WHEEL_CACHE"
+    # Rename to include commit hash
+    BUILT_WHEEL=$(ls -t "$WHEEL_CACHE"/*.whl 2>/dev/null | head -1)
+    if [ -n "$BUILT_WHEEL" ] && [ "$BUILT_WHEEL" != "$CACHED_WHEEL" ]; then
+        mv "$BUILT_WHEEL" "$CACHED_WHEEL"
+    fi
 fi
+
+# Remove opencv (causes circular import with typing module in Ray workers)
+pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python 2>/dev/null || true
+
+echo "✓ vLLM ready"
 EOF
 
 RUN chmod +x /workspace/install-flashinfer.sh /workspace/install-vllm.sh
