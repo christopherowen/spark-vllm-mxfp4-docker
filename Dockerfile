@@ -208,6 +208,14 @@ RUN --mount=type=cache,id=tiktoken-cache,target=/tiktoken-cache \
     fi
 
 # =============================================================================
+# Remove opencv (causes circular import with typing module)
+# =============================================================================
+
+RUN pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python 2>/dev/null || true && \
+    rm -f /usr/local/lib/python3.12/dist-packages/*opencv*.pth \
+          /usr/local/lib/python3.12/dist-packages/*cv2*.pth 2>/dev/null || true
+
+# =============================================================================
 # Create entrypoint script (validation only)
 # =============================================================================
 

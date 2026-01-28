@@ -132,6 +132,14 @@ RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
     uv pip install llama-benchy fastsafetensors
 
 # =============================================================================
+# Remove opencv (causes circular import with typing module)
+# =============================================================================
+
+RUN pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python 2>/dev/null || true && \
+    rm -f /usr/local/lib/python3.12/dist-packages/*opencv*.pth \
+          /usr/local/lib/python3.12/dist-packages/*cv2*.pth 2>/dev/null || true
+
+# =============================================================================
 # Development entrypoint - DOES NOT TOUCH GIT BRANCHES
 # =============================================================================
 
