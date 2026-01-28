@@ -29,6 +29,7 @@
 - avoid self-promotion like 'ai-assisted'
 - **NEVER modify existing copyright headers** in any file
 - **NEVER add copyright headers** to new or existing files
+- **NEVER stop, restart, or recreate Docker containers without asking first** - the operator may have long-running processes (compilation, training, etc.) in the container. Always ask before executing `docker stop`, `docker restart`, `docker compose down`, or suggesting container recreation.
 - **NEVER revert work** - even if a fix is incomplete or has issues, keep the progress and iterate forward. The user strongly dislikes reverting changes. Document limitations instead of undoing work.
   - **Git reverts**: Don't use `git checkout --`, `git reset`, `git checkout -B <branch> <upstream>` that would lose commits
   - **Code reverts**: When hitting an error after making a change, do NOT immediately revert the code change. Instead:

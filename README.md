@@ -226,6 +226,10 @@ sudo rm -rf .cache/
 - Evaluate [ThunderKittens](https://github.com/HazyResearch/ThunderKittens) as alternative to CUTLASS (simpler tile primitives, Blackwell MXFP8/NVFP4 support)
 - Use CUTLASS for dense layers (QKV, O projections, LM head) instead of Marlin fallback
 
+**Multi-Node / Ray Cluster**
+- Enable async scheduling for Ray executor backend - currently disabled because Ray Compiled DAGs are compiled with `enable_asyncio=False`. The Ray executor already has `max_concurrent_batches=2` logic; enabling async would allow batch pipelining (schedule next batch while current executes). Requires: (1) change `enable_asyncio=True` in `ray_executor.py`, (2) add `"ray"` to `executor_supports_async_sched` in `vllm/config/vllm.py`, (3) test for deadlocks/race conditions in multi-node setting
+- Install `ray[default]` in container for full dashboard/metrics support (currently using minimal Ray without `aiohttp_cors`)
+
 **New Features**
 - Speculative decoding with Eagle3 tree-based verification
 - Support for multiple quantization modes: native BF16, MXFP8, MXFP4
