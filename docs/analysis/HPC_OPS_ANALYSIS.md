@@ -9,7 +9,16 @@ HPC-Ops is a production-grade CUDA kernel library from Tencent's Hunyuan AI Infr
 - **FusedMoE (FP8)**: 1.49x prefill, 1.14x decode
 - **GroupGEMM (FP8)**: 1.88x decode over DeepGEMM
 
-While their kernels are SM90-specific, the **techniques are directly applicable** to our SM121 work.
+While their kernels are SM90-specific, **some techniques are applicable** to our SM121 work. However, FlashInfer already implements many of the same optimizations.
+
+### Key Finding: FlashInfer Already Optimized
+
+After reviewing both codebases, FlashInfer already has:
+- ✅ `math.cuh` with `ptx_exp2`, `ptx_log2`, `ptx_rcp` (same as hpc-ops)
+- ✅ SM120 attention uses `exp2f()` with log2 scaling
+- ✅ `-use_fast_math` compiler flag enabled
+- ❌ MoE activation NOT fused with quantization (gap exists)
+- ❌ No specialized small-M warp reductions (gap exists)
 
 ---
 
@@ -70,43 +79,40 @@ Our attention decode could use this pattern to overlap KV cache loading with att
 // Use log2 space for numerical stability + speed
 float one_over_dk_log2e = 1.0f / (sqrt(dk) * log2(e));
 
-// Scale in log2 space
-row_max = warp_reduce(row_max) * one_over_dk_log2e;
-
 // exp2 is faster than exp (single PTX instruction)
 tAttr(im, in) = exp2f_ftz(tAttr(im, in) * one_over_dk_log2e - gMax(in));
-
-// Rescale running sum
-float scale = exp2f_ftz(last_max - gMax(in));
-gSum(in) = gSum(in) * scale + row_sum;
 ```
 
-**Key Insight:** 
-- `exp2f_ftz` maps to a single PTX instruction (`ex2.approx.ftz.f32`)
-- Working in log2 space avoids expensive division by log(e)
-- `_ftz` (flush-to-zero) versions are faster than standard math
+**FlashInfer Already Does This!**
 
-**Fast Math Utilities (utils.cuh):**
+FlashInfer's `math.cuh` (lines 42-46, 52-56, 83-86):
 ```cpp
-__device__ __forceinline__ float exp2f_ftz(float x) {
-    float r;
-    asm volatile("ex2.approx.ftz.f32 %0, %1;\n" : "=f"(r) : "f"(x));
-    return r;
+// flashinfer/include/flashinfer/math.cuh
+__forceinline__ __device__ float ptx_exp2(float x) {
+  float y;
+  asm volatile("ex2.approx.ftz.f32 %0, %1;" : "=f"(y) : "f"(x));
+  return y;
 }
 
-__device__ __forceinline__ float rcpf_ftz(float x) {
-    float r;
-    asm volatile("rcp.approx.ftz.f32 %0, %1;\n" : "=f"(r) : "f"(x));
-    return r;
+__forceinline__ __device__ float ptx_log2(float x) {
+  float y;
+  asm volatile("lg2.approx.ftz.f32 %0, %1;" : "=f"(y) : "f"(x));
+  return y;
 }
 
-__device__ __forceinline__ float silu(float x) {
-    return x * rcpf_ftz(1.f + expf_ftz(-x));
+__forceinline__ __device__ float ptx_rcp(float x) {
+  float y;
+  asm volatile("rcp.approx.ftz.f32 %0, %1;" : "=f"(y) : "f"(x));
+  return y;
 }
 ```
 
-**Applicability to SM121:**
-Our FlashInfer attention kernels likely use standard exp/log. Switching to log2 space with `exp2f_ftz` could provide measurable speedup.
+And SM120 attention (`csrc/xqa/mla_sm120.cu`, line 925) uses log2 space:
+```cpp
+x(m, n)(i, j) = exp2f(elem * qkScaleLog2e - maxVal);
+```
+
+**Status: ✅ FlashInfer already optimized** - No action needed for attention softmax.
 
 ### 4. Specialized Warp Reductions
 
@@ -250,116 +256,99 @@ Our decode attention (M=1 typically) could benefit from a specialized "M=1" kern
 
 ---
 
-## Comparison: HPC-Ops vs Our Approach
+## Comparison: HPC-Ops vs FlashInfer (Our Stack)
 
-| Aspect | HPC-Ops (SM90) | Our Current (SM121) |
-|--------|----------------|---------------------|
-| **Attention** | Custom CUTE/CUTLASS | FlashInfer FA2 |
-| **MoE** | Fused 5-kernel pipeline | CUTLASS grouped GEMM |
-| **Softmax** | log2 space + exp2f_ftz | Standard exp |
-| **Load/Compute Overlap** | Explicit warp specialization | CUTLASS implicit |
-| **TMA** | Dynamic descriptor updates | Fixed descriptors |
-| **Precision** | FP8 E4M3 | FP8×FP4 (MXFP4) |
-| **Activation Fusion** | SiLU + quant fused | Separate kernels |
+| Aspect | HPC-Ops (SM90) | FlashInfer (SM121) | Gap? |
+|--------|----------------|---------------------|------|
+| **Attention** | Custom CUTE/CUTLASS | FlashInfer FA2/MLA | Similar |
+| **MoE** | Fused 5-kernel pipeline | CUTLASS grouped GEMM | Similar |
+| **Softmax** | log2 space + exp2f_ftz | log2 space + exp2f ✅ | **None** |
+| **Fast Math** | Custom PTX intrinsics | `math.cuh` with same PTX ✅ | **None** |
+| **Load/Compute Overlap** | Explicit warp specialization | CUTLASS implicit | Minor |
+| **TMA** | Dynamic descriptor updates | Fixed descriptors | Minor |
+| **Precision** | FP8 E4M3 | FP8×FP4 (MXFP4) | Different |
+| **Activation Fusion** | SiLU + quant fused | SiLU fused, quant separate | **Gap** |
+| **Small-M Reductions** | 4-lane/8-lane specialized | Full 32-lane warp | **Gap** |
 
 ---
 
 ## Recommended Actions
 
-### High Priority (Direct Performance Impact)
+### Already Implemented in FlashInfer (No Action Needed)
 
-1. **Adopt log2 Softmax Space**
-   - Replace `exp(x)` with `exp2f_ftz(x * log2e)` in attention
-   - Expected: 5-10% attention speedup
+1. ~~**Adopt log2 Softmax Space**~~ ✅
+   - FlashInfer's `math.cuh` already has `ptx_exp2`, `ptx_log2`, `ptx_rcp`
+   - SM120 attention uses `exp2f(elem * qkScaleLog2e - maxVal)`
 
-2. **Fuse Activation + Quantization**
-   - Combine SiLU activation with FP8 quantization
-   - Avoid memory round-trip between MoE GEMMs
+2. ~~**Add Fast Math Utilities**~~ ✅
+   - FlashInfer already has `math.cuh` with PTX intrinsics
+   - Compiler flag `-use_fast_math` already enabled
+
+### High Priority (Actual Gaps)
+
+1. **Fuse Activation + Quantization in MoE**
+   - Current: SiLU is fused with GEMM epilogue via CUTLASS, but NOT with FP8 quantization
+   - FlashInfer's `doGatedActivationKernel` (line 2003-2055 in cutlass_fused_moe_kernels.cuh) is separate
+   - hpc-ops: `act_mul_and_quant_async` combines SiLU + FP8 quant in one kernel
+   - **Gap: Extra memory round-trip between gate_up GEMM → activation → down GEMM**
    - Expected: 5-15% MoE decode speedup
 
-3. **Add Fast Math Utilities**
-   - Create `utils.cuh` with `exp2f_ftz`, `rcpf_ftz`, `silu_fast`
-   - Use throughout FlashInfer kernels
+2. **Small-M Warp Reductions for Decode Attention**
+   - FlashInfer uses full 32-lane warp reductions everywhere
+   - hpc-ops has specialized 4-lane and 8-lane reductions for M=1 decode
+   - For decode attention with M=1, only need 4-lane reduction (2 shuffles vs 5)
+   - Expected: Minor speedup (~2-5%) for decode attention
 
 ### Medium Priority (Architecture Improvements)
 
-4. **Implement Warp Specialization for Decode**
-   - Separate load and compute warpgroups
-   - Explicit register allocation tuning
+3. **Explicit Warp Specialization for Decode**
+   - hpc-ops explicitly splits thread blocks: load warpgroup (24 regs) vs math warpgroup (232 regs)
+   - FlashInfer relies on CUTLASS's implicit scheduling
+   - May improve decode latency through better resource utilization
 
-5. **Small-M Attention Kernel**
-   - Specialized kernel for M=1 decode
-   - 4-lane reductions instead of full warp
-
-6. **Multi-Stage Pipelining for Attention**
-   - Overlap KV cache loads with attention compute
-   - Double-buffer KV in shared memory
+4. **Dynamic TMA Descriptor Updates for MoE**
+   - hpc-ops updates TMA descriptors per-expert dynamically
+   - Could reduce kernel launch overhead for variable expert batch sizes
 
 ### Lower Priority (Future Optimization)
 
-7. **Dynamic TMA for MoE**
-   - Per-expert TMA descriptor updates
-   - Single kernel launch for all experts
-
-8. **Multimem Operations for TP**
-   - Explore `multimem.ld_reduce` for all-reduce
-   - May help with TP=2 NCCL overhead
+5. **Multimem Operations for TP All-Reduce**
+   - `multimem.ld_reduce` for hardware-accelerated all-reduce
+   - May reduce TP=2 NCCL overhead
 
 ---
 
-## Code Snippets to Port
+## Code Snippets to Consider
 
-### Fast Math Header (Recommended for FlashInfer)
+### FlashInfer Already Has Fast Math (No Porting Needed)
 
+FlashInfer's `include/flashinfer/math.cuh` already contains:
 ```cpp
-// flashinfer/include/flashinfer/fast_math.cuh
+// Already exists in FlashInfer!
+constexpr float log2e = 1.44269504088896340736f;
 
-#pragma once
-
-namespace flashinfer {
-namespace fast_math {
-
-__device__ __forceinline__ float exp2f_ftz(float x) {
-    float r;
-    asm volatile("ex2.approx.ftz.f32 %0, %1;\n" : "=f"(r) : "f"(x));
-    return r;
+__forceinline__ __device__ float ptx_exp2(float x) {
+  asm volatile("ex2.approx.ftz.f32 %0, %1;" : "=f"(y) : "f"(x));
+  return y;
 }
 
-__device__ __forceinline__ float log2f_ftz(float x) {
-    float r;
-    asm volatile("lg2.approx.ftz.f32 %0, %1;\n" : "=f"(r) : "f"(x));
-    return r;
+__forceinline__ __device__ float ptx_log2(float x) {
+  asm volatile("lg2.approx.ftz.f32 %0, %1;" : "=f"(y) : "f"(x));
+  return y;
 }
 
-__device__ __forceinline__ float rcpf_ftz(float x) {
-    float r;
-    asm volatile("rcp.approx.ftz.f32 %0, %1;\n" : "=f"(r) : "f"(x));
-    return r;
+__forceinline__ __device__ float ptx_rcp(float x) {
+  asm volatile("rcp.approx.ftz.f32 %0, %1;" : "=f"(y) : "f"(x));
+  return y;
 }
-
-__device__ __forceinline__ float rsqrtf_ftz(float x) {
-    float r;
-    asm volatile("rsqrt.approx.ftz.f32 %0, %1;\n" : "=f"(r) : "f"(x));
-    return r;
-}
-
-__device__ __forceinline__ float expf_ftz(float x) {
-    constexpr float LOG2E = 1.4426950408889634f;
-    return exp2f_ftz(x * LOG2E);
-}
-
-__device__ __forceinline__ float silu_fast(float x) {
-    return x * rcpf_ftz(1.f + expf_ftz(-x));
-}
-
-} // namespace fast_math
-} // namespace flashinfer
 ```
 
-### Warp Reduction Utilities
+### Potentially Useful: Small-M Warp Reductions
 
+These could be added to FlashInfer for decode attention optimization:
 ```cpp
-// Specialized reductions for small attention M
+// 4-lane reduction (for M=1 decode attention)
+// Only 2 shuffles instead of 5 for full warp reduction
 __device__ __forceinline__ float warp_4lane_reduce_max_xor(float x) {
     x = fmaxf(__shfl_xor_sync(0xFFFFFFFF, x, 1), x);
     x = fmaxf(__shfl_xor_sync(0xFFFFFFFF, x, 2), x);
@@ -372,6 +361,28 @@ __device__ __forceinline__ float warp_4lane_reduce_sum_xor(float x) {
     return x;
 }
 ```
+
+### Main Gap: Fused SiLU + Quantization
+
+hpc-ops fuses activation and quantization:
+```cpp
+// hpc-ops: Single kernel
+void act_mul_and_quant_async(
+    T2* output_fp8,           // Output: FP8 quantized
+    const T1* input_bf16,     // Input: BF16 from gate_up GEMM
+    const float* scale,
+    ...
+);
+```
+
+FlashInfer has separate kernels:
+```cpp
+// FlashInfer: Separate steps (extra memory traffic)
+// 1. GEMM with SiLU epilogue → BF16 intermediate
+// 2. Separate FP8 quantization kernel
+```
+
+A fused kernel would eliminate the BF16 intermediate write/read.
 
 ---
 
