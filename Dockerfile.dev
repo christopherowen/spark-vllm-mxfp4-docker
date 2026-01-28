@@ -132,14 +132,6 @@ RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
     uv pip install llama-benchy fastsafetensors
 
 # =============================================================================
-# Remove opencv (causes circular import with typing module)
-# =============================================================================
-
-RUN pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python 2>/dev/null || true && \
-    rm -f /usr/local/lib/python3.12/dist-packages/*opencv*.pth \
-          /usr/local/lib/python3.12/dist-packages/*cv2*.pth 2>/dev/null || true
-
-# =============================================================================
 # Development entrypoint - DOES NOT TOUCH GIT BRANCHES
 # =============================================================================
 
@@ -268,9 +260,9 @@ RUN cat > /workspace/install-vllm.sh << 'EOF'
 set -e
 cd /workspace/vllm
 
-# Fast path: already working (~10s check)
+# Fast path: check if BOTH import AND CLI work (~10s check)
 if [ "$1" != "--force" ]; then
-    if python -c "from vllm.entrypoints.openai.api_server import run_server" 2>/dev/null; then
+    if python -c "from vllm.entrypoints.openai.api_server import run_server" 2>/dev/null && command -v vllm &>/dev/null; then
         echo "✓ vLLM ready"
         exit 0
     fi
@@ -279,14 +271,20 @@ fi
 SO_COUNT=$(find /workspace/vllm/vllm -name "*.so" 2>/dev/null | wc -l)
 
 if [ "$SO_COUNT" -gt 0 ] && [ "$1" != "--force" ]; then
-    # Already compiled - just set up to use it (~30-60s)
+    # Already compiled - install using VLLM_USE_PRECOMPILED to skip recompilation (~30-60s)
     echo "Found $SO_COUNT compiled extensions"
-    echo "Installing dependencies..."
+    echo "Installing vLLM (using existing .so files)..."
     
     python3 use_existing_torch.py
     sed -i "/flashinfer/d" requirements/cuda.txt 2>/dev/null || true
     uv pip install -r requirements/build.txt -q
     uv pip install -r requirements/cuda.txt -q 2>/dev/null || true
+    
+    # VLLM_USE_PRECOMPILED=1 tells setup.py to skip compilation
+    VLLM_USE_PRECOMPILED=1 uv pip install --no-build-isolation -e .
+    
+    # Remove opencv (causes circular import with typing module in Ray workers)
+    pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python 2>/dev/null || true
     
     echo "✓ vLLM ready"
 else
@@ -298,6 +296,9 @@ else
     uv pip install -r requirements/build.txt
     export TORCH_CUDA_ARCH_LIST="12.0;12.1"
     uv pip install --no-build-isolation -e .
+    
+    # Remove opencv (causes circular import with typing module in Ray workers)
+    pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python 2>/dev/null || true
     
     echo "✓ vLLM compiled and installed"
 fi

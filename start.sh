@@ -20,6 +20,8 @@ echo "=============================================="
 
 docker exec -it vllm-dev bash -c "
 export PYTHONPATH=/workspace/flashinfer:/workspace/vllm
+# Disable GPU Direct Storage for fastsafetensors (not available on this platform)
+export VLLM_FASTSAFETENSORS_NOGDS=1
 
 vllm serve $MODEL \\
     --host $HOST \\

@@ -30,6 +30,9 @@ services:
     container_name: vllm-mxfp4
     restart: unless-stopped
     
+    # Use host networking for multi-node Ray/NCCL
+    network_mode: host
+    
     # GPU access
     deploy:
       resources:
@@ -39,9 +42,8 @@ services:
               count: all
               capabilities: [gpu]
     
-    # Port mapping
-    ports:
-      - "8000:8000"
+    # No port mapping needed with network_mode: host
+    # All ports are directly accessible on host
     
     # Shared memory for CUDA IPC
     ipc: host

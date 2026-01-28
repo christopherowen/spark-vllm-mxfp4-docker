@@ -20,6 +20,9 @@ services:
     image: vllm-dev:latest
     container_name: vllm-dev
     
+    # Use host networking for multi-node Ray/NCCL
+    network_mode: host
+    
     # GPU access
     deploy:
       resources:
@@ -45,8 +48,8 @@ services:
       memlock: -1
       stack: 67108864
     
-    # No ports - dev container is for interactive use
-    # Use 'serve' service or run vllm manually with port mapping
+    # No port mapping needed with network_mode: host
+    # All ports are directly accessible on host
     
     # Mount source code repos (EDIT THESE PATHS)
     volumes:
