@@ -33,9 +33,15 @@ services:
               capabilities: [gpu]
     ipc: host
     
+    # RDMA device access for NCCL IB/RoCE transport
+    devices:
+      - /dev/infiniband:/dev/infiniband
+    
     # Enable full nsys profiling (CPU samples, context switches)
+    # IPC_LOCK required for RDMA memory pinning
     cap_add:
       - SYS_ADMIN
+      - IPC_LOCK
     security_opt:
       - seccomp=unconfined
     

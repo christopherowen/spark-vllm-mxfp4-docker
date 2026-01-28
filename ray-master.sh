@@ -45,6 +45,11 @@ export NCCL_DEBUG=WARN
 export NCCL_SOCKET_IFNAME=enp1s0f1np1
 export GLOO_SOCKET_IFNAME=enp1s0f1np1
 
+export NCCL_SOCKET_IFNAME=enp1s0f1np1
+export NCCL_IB_DISABLE=0
+export NCCL_IB_HCA=rocep1s0f1
+export NCCL_DEBUG=INFO
+
 # Opt into future Ray behavior for accelerator env var handling (silences FutureWarning)
 export RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
 # Disable Ray memory monitor refresh (reduces overhead)
