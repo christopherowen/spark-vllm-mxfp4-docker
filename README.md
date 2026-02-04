@@ -2,6 +2,8 @@
 
 **Fastest gpt-oss-120b inference on DGX Spark** - **72 tok/s decode with TP=2**, beating all competitors.
 
+Based on: https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch
+
 ## Benchmark Results
 
 ### TP=2 (Two-Node with RDMA) - New Record!
