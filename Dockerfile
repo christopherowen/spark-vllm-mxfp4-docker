@@ -18,7 +18,7 @@
 #
 # =============================================================================
 
-FROM nvcr.io/nvidia/pytorch:25.12-py3
+FROM nvcr.io/nvidia/pytorch:26.01-py3
 
 LABEL maintainer="MXFP4 Optimization Project"
 LABEL description="vLLM with optimized MXFP4 for DGX Spark (SM121/GB10)"
