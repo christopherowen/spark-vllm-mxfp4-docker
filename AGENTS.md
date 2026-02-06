@@ -118,6 +118,51 @@ if constexpr (!IsCtaM64) { CUTE_STATIC_ASSERT_V(...); }
 - `-gencode=arch=compute_121a,code=sm_121a` for SM121
 - CUTLASS uses `CMAKE_CXX_STANDARD 17`
 
+### Host/Device Memory Boundary
+
+**CRITICAL: Never dereference device pointers from host code.** This is a common source of segfaults and garbage values in CUTLASS launchers.
+
+**❌ WRONG - Dereferencing device pointer on host:**
+```cpp
+// stride_ptr is a DEVICE pointer to an array of strides
+auto stride_val = *stride_ptr;  // SEGFAULT or garbage!
+
+// Same issue with array indexing
+auto first_ptr = ptr_array[0];  // SEGFAULT if ptr_array is on device
+```
+
+**✓ CORRECT - Copy to host first, or pass device pointer through:**
+```cpp
+// Option A: Copy single value from device to host
+StrideType host_stride{};
+cudaMemcpy(&host_stride, stride_ptr, sizeof(StrideType), cudaMemcpyDeviceToHost);
+
+// Option B: Pass device pointer through to kernel (let kernel access it)
+// Common in grouped GEMM where per-expert arrays live on device
+kernel<<<...>>>(stride_ptr);  // Kernel will dereference on device
+```
+
+**Common patterns in FlashInfer/CUTLASS:**
+- `tma_inputs.ptr_weight` is `void const**` on DEVICE (array of per-expert weight pointers)
+- `tma_inputs.stride_act` is `StrideType*` on DEVICE (pointer to stride value(s))
+- Use `std::is_pointer_v<T>` to detect if a type is a pointer and handle accordingly:
+  ```cpp
+  auto stride = [&]() -> StrideType {
+    if constexpr (std::is_pointer_v<StrideType>) {
+      return stride_ptr;  // Pass device pointer through
+    } else {
+      StrideType host_val{};
+      cudaMemcpy(&host_val, stride_ptr, sizeof(StrideType), cudaMemcpyDeviceToHost);
+      return host_val;
+    }
+  }();
+  ```
+
+**Symptoms of device pointer dereference on host:**
+- Segfault during kernel launch setup (before kernel runs)
+- TMA descriptor with `globalStrides (0,0,0,0,0)` or garbage values
+- `cuTensorMapEncodeTiled` returning `CUDA_ERROR_INVALID_VALUE`
+
 ## Implementation Stack
 
 ### WE ARE USING

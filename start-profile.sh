@@ -23,20 +23,52 @@ echo "Benchmark: llama-benchy --pp 2048 --tg 32 128"
 echo "NVTX: --enable-layerwise-nvtx-tracing"
 echo "=============================================="
 
+# ---- Pre-flight: check for memory consumers inside the container -------------
+CONTAINER="${VLLM_CONTAINER:-vllm-dev}"
+GPU_PROCS=$(docker exec "${CONTAINER}" nvidia-smi --query-compute-apps=pid,process_name,used_gpu_memory --format=csv,noheader 2>/dev/null || true)
+MEM_HOGS=$(docker exec "${CONTAINER}" bash -c 'ps aux --sort=-%mem | awk "NR>1 && \$6 > 1048576 { printf \"  PID %-8s  RSS %-6dMB  %s\n\", \$2, \$6/1024, \$11 }"' 2>/dev/null || true)
+
+if [[ -n "${GPU_PROCS}" || -n "${MEM_HOGS}" ]]; then
+  echo "ERROR: Memory-hungry processes detected inside the container."
+  echo "On GB10 (unified memory), these steal from the GPU memory pool."
+  echo ""
+  if [[ -n "${GPU_PROCS}" ]]; then
+    echo "GPU compute processes:"
+    echo "${GPU_PROCS}" | sed 's/^/  /'
+    echo ""
+  fi
+  if [[ -n "${MEM_HOGS}" ]]; then
+    echo "Host memory hogs (>1 GB RSS):"
+    echo "${MEM_HOGS}"
+    echo ""
+  fi
+  echo "To kill all: docker exec ${CONTAINER} bash -c 'pkill -9 -f \"ptxas|nvcc|vllm\" 2>/dev/null; true'"
+  exit 1
+fi
+
 # Create script to run inside container
-docker exec -it vllm-dev bash -c "
+docker exec -it "${CONTAINER}" bash -c "
 set -e
 export PYTHONPATH=/workspace/flashinfer:/workspace/vllm
+export VLLM_FASTSAFETENSORS_NOGDS=1
+export VLLM_MXFP4_FUSE_GATED_FC1=${VLLM_MXFP4_FUSE_GATED_FC1:-0}
 mkdir -p /tmp/nsys_profile
 
 echo ''
 echo '=== Phase 1: Launching vLLM under nsys (capture paused) ==='
 echo ''
 
-# Launch vLLM under nsys with session name and trace options
-nsys launch \\
+# Use nsys profile --start-later (not nsys launch) to fully initialize CUPTI.
+# nsys launch only sets up API interception and misses GPU kernel data.
+nsys profile \\
     --session-new=${SESSION_NAME} \\
-    --cuda-memory-usage=true \\
+    --start-later \\
+    --output=${PROFILE_OUTPUT} \\
+    --force-overwrite=true \\
+    --trace=cuda,nvtx,osrt \\
+    --cuda-graph-trace=node \\
+    --sample=none \\
+    --stats=true \\
     -- python -m vllm.entrypoints.openai.api_server \\
         --model $MODEL \\
         --host $HOST \\
@@ -73,7 +105,9 @@ while [ \$WAITED -lt \$MAX_WAIT ]; do
     fi
     sleep 5
     WAITED=\$((WAITED + 5))
-    echo \"  Waiting... (\${WAITED}s)\"
+    if [ \$((WAITED % 60)) -eq 0 ]; then
+        echo \"  Still waiting... (\${WAITED}s)\"
+    fi
 done
 
 if [ \$WAITED -ge \$MAX_WAIT ]; then
@@ -103,11 +137,9 @@ echo ''
 echo '=== Phase 4: Starting profiling capture ==='
 echo ''
 
-# Start capture with output file (after warmup, so profile is clean)
+# Start capture (output/trace already configured on nsys profile above)
 nsys start \\
-    --session=${SESSION_NAME} \\
-    --output=${PROFILE_OUTPUT} \\
-    --force-overwrite=true
+    --session=${SESSION_NAME}
 
 echo \"Profiling started!\"
 
@@ -143,9 +175,6 @@ nsys stop --session=${SESSION_NAME}
 echo ''
 echo '=============================================='
 echo \"Profile saved to: ${PROFILE_OUTPUT}.nsys-rep\"
-echo ''
-echo 'Analyze with:'
-echo \"  ./analyze-profile.sh ${PROFILE_OUTPUT}.nsys-rep\"
 echo '=============================================='
 
 # Cleanup

@@ -1,0 +1,67 @@
+CompileFlags:
+  # Local clangd hints for CUDA/CUTLASS debugging files in this repo.
+  # (Primary per-repo config lives in ~/projects/flashinfer/.clangd)
+  Add:
+    - --std=c++17
+    - -stdlib=libstdc++
+    - -isystem/usr/include/c++/13
+    - -isystem/usr/include/aarch64-linux-gnu/c++/13
+    - -isystem/usr/include/c++/13/backward
+    - -isystem/usr/lib/gcc/aarch64-linux-gnu/13/include
+    - -isystem/usr/include/aarch64-linux-gnu
+    - -isystem/usr/include
+
+    # Point at the local FlashInfer + CUTLASS sources so navigation works when
+    # you open/inspect kernels from this benchmarking repo.
+    - -I/home/swank/projects/flashinfer/include
+    - -I/home/swank/projects/flashinfer/csrc
+    - -I/home/swank/projects/flashinfer/3rdparty/cutlass/include
+    - -I/home/swank/projects/flashinfer/3rdparty/cutlass/tools/util/include
+    - -I/home/swank/projects/flashinfer/3rdparty/cutlass/examples/common
+    - -I/workspace/flashinfer/include
+    - -I/workspace/flashinfer/csrc
+    - -I/workspace/flashinfer/3rdparty/cutlass/include
+    - -I/workspace/flashinfer/3rdparty/cutlass/tools/util/include
+    - -I/workspace/flashinfer/3rdparty/cutlass/examples/common
+
+    - "-D__INTELLISENSE__"
+    - "-D__CLANGD__"
+    # Don't define __CUDA_ARCH__ globally; apply only for SM12x kernel paths via If:.
+    - "-Wno-invalid-constexpr"
+
+  Remove:
+    - "-Xfatbin*"
+    - "-gencode*"
+    - "--generate-code*"
+    - "-ccbin*"
+    - "--compiler-options*"
+    - "--expt-extended-lambda"
+    - "--expt-relaxed-constexpr"
+    - "-forward-unknown-to-host-compiler"
+    - "-Werror=cross-execution-space-call"
+
+Diagnostics:
+  Suppress:
+    - "variadic_device_fn"
+    - "attributes_not_allowed"
+
+---
+If:
+  PathMatch: .*(\.(cu)$|/flashinfer/.*\.cuh$|/flashinfer/.*\.(cu|cuh|inl)$|/workspace/flashinfer/.*\.(cu|cuh|inl)$).*
+CompileFlags:
+  Add:
+    - --cuda-path=/usr/local/cuda
+    - --cuda-gpu-arch=sm_90a
+    - --no-cuda-version-check
+    - -I/usr/local/cuda/include
+    - "-D__CUDACC_VER_MAJOR__=13"
+    - "-D__CUDACC_VER_MINOR__=0"
+
+---
+If:
+  PathMatch: .*(/flashinfer/|/flashinfer/3rdparty/|/workspace/flashinfer/).*(/csrc/nv_internal/tensorrt_llm/kernels/cutlass_kernels/moe_gemm/|/include/flashinfer/gemm/|/csrc/fused_moe/).*
+CompileFlags:
+  Add:
+    - "-D__CUDA_ARCH__=1210"
+    - "-D__CUDA_ARCH_FEAT_SM121_ALL"
+    - "-DCUTLASS_ARCH_MMA_SM121_SUPPORTED=1"

@@ -7,12 +7,15 @@ echo "=============================================="
 echo "Stopping vLLM and related processes"
 echo "=============================================="
 
+# Container name (dev container)
+CONTAINER="${VLLM_CONTAINER:-vllm-dev}"
+
 # Check if container is running
-if ! docker ps --filter name=vllm-dev --format "{{.Names}}" | grep -q vllm-dev; then
-    echo "Container vllm-dev is not running"
+if ! docker ps --filter "name=${CONTAINER}" --format "{{.Names}}" | grep -q "${CONTAINER}"; then
+    echo "Container ${CONTAINER} is not running"
 else
     # Kill processes inside the container
-    docker exec vllm-dev bash -c '
+    docker exec "${CONTAINER}" bash -c '
     echo "Killing processes..."
     
     # Kill by specific patterns (order matters - children first)
@@ -55,8 +58,8 @@ echo "GPU State"
 echo "=============================================="
 
 # Try container first, then host
-if docker ps --filter name=vllm-dev --format "{{.Names}}" | grep -q vllm-dev; then
-    docker exec vllm-dev nvidia-smi
+if docker ps --filter "name=${CONTAINER}" --format "{{.Names}}" | grep -q "${CONTAINER}"; then
+    docker exec "${CONTAINER}" nvidia-smi
 elif command -v nvidia-smi &>/dev/null; then
     nvidia-smi
 else

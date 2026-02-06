@@ -1,0 +1,103 @@
+2026-01-31T11:17:01.660688+01:00 localhost CRON[224375]: (root) CMD (cd / && run-parts --report /etc/cron.hourly)
+2026-01-31T11:17:40.586460+01:00 localhost kernel: NVRM: nvCheckOkFailedNoLog: Check failed: Out of memory [NV_ERR_NO_MEMORY] (0x00000051) returned from _memdescAllocInternal(pMemDesc) @ mem_desc.c:1359
+2026-01-31T11:18:40.401184+01:00 localhost wpa_supplicant[1797]: wlP9s9: CTRL-EVENT-REGDOM-CHANGE init=DRIVER type=INTERSECTION
+2026-01-31T11:18:40.401593+01:00 localhost wpa_supplicant[1797]: wlP9s9: CTRL-EVENT-REGDOM-CHANGE init=DRIVER type=INTERSECTION
+2026-01-31T11:18:46.715984+01:00 localhost NetworkManager[1792]: <info>  [1769854726.7153] policy: auto-activating connection 'Wired connection 2' (99bed142-bcf3-3997-b8cd-5f73e28ef8a6)
+2026-01-31T11:18:46.716224+01:00 localhost NetworkManager[1792]: <info>  [1769854726.7159] device (enP2p1s0f1np1): Activation: starting connection 'Wired connection 2' (99bed142-bcf3-3997-b8cd-5f73e28ef8a6)
+2026-01-31T11:18:46.716265+01:00 localhost NetworkManager[1792]: <info>  [1769854726.7160] device (enP2p1s0f1np1): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:18:46.716306+01:00 localhost NetworkManager[1792]: <info>  [1769854726.7161] device (enP2p1s0f1np1): state change: prepare -> config (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:18:46.716617+01:00 localhost NetworkManager[1792]: <info>  [1769854726.7166] device (enP2p1s0f1np1): state change: config -> ip-config (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:18:46.716886+01:00 localhost NetworkManager[1792]: <info>  [1769854726.7168] dhcp4 (enP2p1s0f1np1): activation: beginning transaction (timeout in 45 seconds)
+2026-01-31T11:18:46.717103+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=ff00::/8, gw=, outif=6, table=255
+2026-01-31T11:18:46.717735+01:00 localhost avahi-daemon[1637]: Joining mDNS multicast group on interface enP2p1s0f1np1.IPv6 with address fe80::aa89:8bbe:e26b:3efe.
+2026-01-31T11:18:46.717904+01:00 localhost avahi-daemon[1637]: New relevant interface enP2p1s0f1np1.IPv6 for mDNS.
+2026-01-31T11:18:46.717925+01:00 localhost avahi-daemon[1637]: Registering new address record for fe80::aa89:8bbe:e26b:3efe on enP2p1s0f1np1.*.
+2026-01-31T11:18:48.201130+01:00 localhost systemd-networkd[1457]: enP2p1s0f1np1: Gained IPv6LL
+2026-01-31T11:19:11.944526+01:00 localhost tailscaled[2126]: magicsock: endpoints changed: 109.81.2.241:22820 (stun), 109.81.2.241:22798 (stun), 109.81.2.241:41641 (stun4localport), 10.0.1.70:41641 (local), 10.10.10.2:41641 (local), 172.17.0.1:41641 (local), 172.18.0.1:41641 (local), 172.19.0.1:41641 (local), 172.20.0.1:41641 (local)
+2026-01-31T11:19:31.718304+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7178] device (enP2p1s0f1np1): state change: ip-config -> failed (reason 'ip-config-unavailable', sys-iface-state: 'managed')
+2026-01-31T11:19:31.718530+01:00 localhost NetworkManager[1792]: <warn>  [1769854771.7182] device (enP2p1s0f1np1): Activation: failed for connection 'Wired connection 2'
+2026-01-31T11:19:31.718610+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7183] device (enP2p1s0f1np1): state change: failed -> disconnected (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:19:31.718845+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=fe80::/64, gw=, outif=6, table=254
+2026-01-31T11:19:31.718882+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=fe80::aa89:8bbe:e26b:3efe/128, gw=, outif=6, table=255
+2026-01-31T11:19:31.718917+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=ff00::/8, gw=, outif=6, table=255
+2026-01-31T11:19:31.719102+01:00 localhost avahi-daemon[1637]: Withdrawing address record for fe80::aa89:8bbe:e26b:3efe on enP2p1s0f1np1.
+2026-01-31T11:19:31.719240+01:00 localhost avahi-daemon[1637]: Leaving mDNS multicast group on interface enP2p1s0f1np1.IPv6 with address fe80::aa89:8bbe:e26b:3efe.
+2026-01-31T11:19:31.719266+01:00 localhost avahi-daemon[1637]: Interface enP2p1s0f1np1.IPv6 no longer relevant for mDNS.
+2026-01-31T11:19:31.719315+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7192] dhcp4 (enP2p1s0f1np1): canceled DHCP transaction
+2026-01-31T11:19:31.719367+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7192] dhcp4 (enP2p1s0f1np1): activation: beginning transaction (timeout in 45 seconds)
+2026-01-31T11:19:31.719400+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7192] dhcp4 (enP2p1s0f1np1): state changed no lease
+2026-01-31T11:19:31.720164+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7201] policy: auto-activating connection 'Wired connection 2' (99bed142-bcf3-3997-b8cd-5f73e28ef8a6)
+2026-01-31T11:19:31.720517+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7204] device (enP2p1s0f1np1): Activation: starting connection 'Wired connection 2' (99bed142-bcf3-3997-b8cd-5f73e28ef8a6)
+2026-01-31T11:19:31.720587+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7205] device (enP2p1s0f1np1): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:19:31.720778+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7207] device (enP2p1s0f1np1): state change: prepare -> config (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:19:31.721177+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7211] device (enP2p1s0f1np1): state change: config -> ip-config (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:19:31.721416+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=ff00::/8, gw=, outif=6, table=255
+2026-01-31T11:19:31.721466+01:00 localhost NetworkManager[1792]: <info>  [1769854771.7214] dhcp4 (enP2p1s0f1np1): activation: beginning transaction (timeout in 45 seconds)
+2026-01-31T11:19:31.722317+01:00 localhost avahi-daemon[1637]: Joining mDNS multicast group on interface enP2p1s0f1np1.IPv6 with address fe80::aa89:8bbe:e26b:3efe.
+2026-01-31T11:19:31.722387+01:00 localhost avahi-daemon[1637]: New relevant interface enP2p1s0f1np1.IPv6 for mDNS.
+2026-01-31T11:19:31.722425+01:00 localhost avahi-daemon[1637]: Registering new address record for fe80::aa89:8bbe:e26b:3efe on enP2p1s0f1np1.*.
+2026-01-31T11:19:33.513348+01:00 localhost systemd-networkd[1457]: enP2p1s0f1np1: Gained IPv6LL
+2026-01-31T11:20:04.467595+01:00 localhost systemd[1]: Starting sysstat-collect.service - system activity accounting tool...
+2026-01-31T11:20:04.491588+01:00 localhost systemd[1]: sysstat-collect.service: Deactivated successfully.
+2026-01-31T11:20:04.491841+01:00 localhost systemd[1]: Finished sysstat-collect.service - system activity accounting tool.
+2026-01-31T11:20:16.717175+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7166] device (enP2p1s0f1np1): state change: ip-config -> failed (reason 'ip-config-unavailable', sys-iface-state: 'managed')
+2026-01-31T11:20:16.717406+01:00 localhost NetworkManager[1792]: <warn>  [1769854816.7170] device (enP2p1s0f1np1): Activation: failed for connection 'Wired connection 2'
+2026-01-31T11:20:16.717473+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7172] device (enP2p1s0f1np1): state change: failed -> disconnected (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:20:16.717652+01:00 localhost avahi-daemon[1637]: Withdrawing address record for fe80::aa89:8bbe:e26b:3efe on enP2p1s0f1np1.
+2026-01-31T11:20:16.717910+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=fe80::/64, gw=, outif=6, table=254
+2026-01-31T11:20:16.717971+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=fe80::aa89:8bbe:e26b:3efe/128, gw=, outif=6, table=255
+2026-01-31T11:20:16.717985+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=ff00::/8, gw=, outif=6, table=255
+2026-01-31T11:20:16.718017+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7176] dhcp4 (enP2p1s0f1np1): canceled DHCP transaction
+2026-01-31T11:20:16.718094+01:00 localhost avahi-daemon[1637]: Leaving mDNS multicast group on interface enP2p1s0f1np1.IPv6 with address fe80::aa89:8bbe:e26b:3efe.
+2026-01-31T11:20:16.718126+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7176] dhcp4 (enP2p1s0f1np1): activation: beginning transaction (timeout in 45 seconds)
+2026-01-31T11:20:16.718172+01:00 localhost avahi-daemon[1637]: Interface enP2p1s0f1np1.IPv6 no longer relevant for mDNS.
+2026-01-31T11:20:16.718192+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7176] dhcp4 (enP2p1s0f1np1): state changed no lease
+2026-01-31T11:20:16.718372+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7183] policy: auto-activating connection 'Wired connection 2' (99bed142-bcf3-3997-b8cd-5f73e28ef8a6)
+2026-01-31T11:20:16.718639+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7186] device (enP2p1s0f1np1): Activation: starting connection 'Wired connection 2' (99bed142-bcf3-3997-b8cd-5f73e28ef8a6)
+2026-01-31T11:20:16.718681+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7186] device (enP2p1s0f1np1): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:20:16.718776+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7187] device (enP2p1s0f1np1): state change: prepare -> config (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:20:16.718962+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7189] device (enP2p1s0f1np1): state change: config -> ip-config (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:20:16.719113+01:00 localhost NetworkManager[1792]: <info>  [1769854816.7190] dhcp4 (enP2p1s0f1np1): activation: beginning transaction (timeout in 45 seconds)
+2026-01-31T11:20:16.719159+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=ff00::/8, gw=, outif=6, table=255
+2026-01-31T11:20:16.719399+01:00 localhost avahi-daemon[1637]: Joining mDNS multicast group on interface enP2p1s0f1np1.IPv6 with address fe80::aa89:8bbe:e26b:3efe.
+2026-01-31T11:20:16.719478+01:00 localhost avahi-daemon[1637]: New relevant interface enP2p1s0f1np1.IPv6 for mDNS.
+2026-01-31T11:20:16.719517+01:00 localhost avahi-daemon[1637]: Registering new address record for fe80::aa89:8bbe:e26b:3efe on enP2p1s0f1np1.*.
+2026-01-31T11:20:17.865173+01:00 localhost systemd-networkd[1457]: enP2p1s0f1np1: Gained IPv6LL
+2026-01-31T11:21:01.717646+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7171] device (enP2p1s0f1np1): state change: ip-config -> failed (reason 'ip-config-unavailable', sys-iface-state: 'managed')
+2026-01-31T11:21:01.718172+01:00 localhost NetworkManager[1792]: <warn>  [1769854861.7175] device (enP2p1s0f1np1): Activation: failed for connection 'Wired connection 2'
+2026-01-31T11:21:01.718420+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=fe80::/64, gw=, outif=6, table=254
+2026-01-31T11:21:01.718492+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=fe80::aa89:8bbe:e26b:3efe/128, gw=, outif=6, table=255
+2026-01-31T11:21:01.718508+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=ff00::/8, gw=, outif=6, table=255
+2026-01-31T11:21:01.718538+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7177] device (enP2p1s0f1np1): state change: failed -> disconnected (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:21:01.718722+01:00 localhost avahi-daemon[1637]: Withdrawing address record for fe80::aa89:8bbe:e26b:3efe on enP2p1s0f1np1.
+2026-01-31T11:21:01.718864+01:00 localhost avahi-daemon[1637]: Leaving mDNS multicast group on interface enP2p1s0f1np1.IPv6 with address fe80::aa89:8bbe:e26b:3efe.
+2026-01-31T11:21:01.718900+01:00 localhost avahi-daemon[1637]: Interface enP2p1s0f1np1.IPv6 no longer relevant for mDNS.
+2026-01-31T11:21:01.728190+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7281] dhcp4 (enP2p1s0f1np1): canceled DHCP transaction
+2026-01-31T11:21:01.728263+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7281] dhcp4 (enP2p1s0f1np1): activation: beginning transaction (timeout in 45 seconds)
+2026-01-31T11:21:01.728300+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7281] dhcp4 (enP2p1s0f1np1): state changed no lease
+2026-01-31T11:21:01.729113+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7290] policy: auto-activating connection 'Wired connection 2' (99bed142-bcf3-3997-b8cd-5f73e28ef8a6)
+2026-01-31T11:21:01.729444+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7294] device (enP2p1s0f1np1): Activation: starting connection 'Wired connection 2' (99bed142-bcf3-3997-b8cd-5f73e28ef8a6)
+2026-01-31T11:21:01.729491+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7294] device (enP2p1s0f1np1): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:21:01.729653+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7296] device (enP2p1s0f1np1): state change: prepare -> config (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:21:01.729999+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7299] device (enP2p1s0f1np1): state change: config -> ip-config (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:21:01.730185+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=ff00::/8, gw=, outif=6, table=255
+2026-01-31T11:21:01.730262+01:00 localhost NetworkManager[1792]: <info>  [1769854861.7302] dhcp4 (enP2p1s0f1np1): activation: beginning transaction (timeout in 45 seconds)
+2026-01-31T11:21:01.730703+01:00 localhost avahi-daemon[1637]: Joining mDNS multicast group on interface enP2p1s0f1np1.IPv6 with address fe80::aa89:8bbe:e26b:3efe.
+2026-01-31T11:21:01.730752+01:00 localhost avahi-daemon[1637]: New relevant interface enP2p1s0f1np1.IPv6 for mDNS.
+2026-01-31T11:21:01.730782+01:00 localhost avahi-daemon[1637]: Registering new address record for fe80::aa89:8bbe:e26b:3efe on enP2p1s0f1np1.*.
+2026-01-31T11:21:03.434339+01:00 localhost systemd-networkd[1457]: enP2p1s0f1np1: Gained IPv6LL
+2026-01-31T11:21:03.443264+01:00 localhost systemd[1]: Starting fwupd-refresh.service - Refresh fwupd metadata and update motd...
+2026-01-31T11:21:03.495806+01:00 localhost systemd[1]: fwupd-refresh.service: Deactivated successfully.
+2026-01-31T11:21:03.496106+01:00 localhost systemd[1]: Finished fwupd-refresh.service - Refresh fwupd metadata and update motd.
+2026-01-31T11:21:46.716829+01:00 localhost NetworkManager[1792]: <info>  [1769854906.7164] device (enP2p1s0f1np1): state change: ip-config -> failed (reason 'ip-config-unavailable', sys-iface-state: 'managed')
+2026-01-31T11:21:46.717393+01:00 localhost NetworkManager[1792]: <warn>  [1769854906.7167] device (enP2p1s0f1np1): Activation: failed for connection 'Wired connection 2'
+2026-01-31T11:21:46.717497+01:00 localhost avahi-daemon[1637]: Withdrawing address record for fe80::aa89:8bbe:e26b:3efe on enP2p1s0f1np1.
+2026-01-31T11:21:46.717680+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=fe80::/64, gw=, outif=6, table=254
+2026-01-31T11:21:46.717743+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=fe80::aa89:8bbe:e26b:3efe/128, gw=, outif=6, table=255
+2026-01-31T11:21:46.717751+01:00 localhost tailscaled[2126]: monitor: RTM_DELROUTE: src=, dst=ff00::/8, gw=, outif=6, table=255
+2026-01-31T11:21:46.717767+01:00 localhost NetworkManager[1792]: <info>  [1769854906.7168] device (enP2p1s0f1np1): state change: failed -> disconnected (reason 'none', sys-iface-state: 'managed')
+2026-01-31T11:21:46.717802+01:00 localhost avahi-daemon[1637]: Leaving mDNS multicast group on interface enP2p1s0f1np1.IPv6 with address fe80::aa89:8bbe:e26b:3efe.
+2026-01-31T11:21:46.717814+01:00 localhost avahi-daemon[1637]: Interface enP2p1s0f1np1.IPv6 no longer relevant for mDNS.
+2026-01-31T11:21:46.737089+01:00 localhost NetworkManager[1792]: <info>  [1769854906.7370] dhcp4 (enP2p1s0f1np1): canceled DHCP transaction
+2026-01-31T11:21:46.737133+01:00 localhost NetworkManager[1792]: <info>  [1769854906.7370] dhcp4 (enP2p1s0f1np1): activation: beginning transaction (timeout in 45 seconds)
+2026-01-31T11:21:46.737161+01:00 localhost NetworkManager[1792]: <info>  [1769854906.7370] dhcp4 (enP2p1s0f1np1): state changed no lease

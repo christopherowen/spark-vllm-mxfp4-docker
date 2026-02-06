@@ -1,0 +1,39 @@
+diff --git a/3rdparty/cutlass/include/cutlass/gemm/collective/sm120_blockscaled_mma_array_tma.hpp b/3rdparty/cutlass/include/cutlass/gemm/collective/sm120_blockscaled_mma_array_tma.hpp
+index 0000000..0000000 100644
+--- a/3rdparty/cutlass/include/cutlass/gemm/collective/sm120_blockscaled_mma_array_tma.hpp
++++ b/3rdparty/cutlass/include/cutlass/gemm/collective/sm120_blockscaled_mma_array_tma.hpp
+@@ -389,7 +389,7 @@ struct CollectiveMma<
+       stride_a = InternalStrideA{};
+       stride_b = InternalStrideB{};
+       layout_SFA = Sm1xxBlkScaledConfig::tile_atom_to_shape_SFA(cute::make_shape(init_M, init_N, init_K, 1));
+-      layout_SFB = Sm1xxBlkScaledConfig::tile_atom_to_shape_SFA(cute::make_shape(init_M, init_N, init_K, 1));
++      layout_SFB = Sm1xxBlkScaledConfig::tile_atom_to_shape_SFB(cute::make_shape(init_M, init_N, init_K, 1));
+     }
+     else {
+       // Tensor shapes for Ptr-Array are initialized correctly only here.
+diff --git a/3rdparty/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp b/3rdparty/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp
+index 0000000..0000000 100644
+--- a/3rdparty/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp
++++ b/3rdparty/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp
+@@ -452,7 +452,7 @@ struct CollectiveMma<
+       stride_a = InternalStrideA{};
+       stride_b = InternalStrideB{};
+       layout_SFA = Sm1xxBlkScaledConfig::tile_atom_to_shape_SFA(cute::make_shape(init_M, init_N, init_K, 1));
+-      layout_SFB = Sm1xxBlkScaledConfig::tile_atom_to_shape_SFA(cute::make_shape(init_M, init_N, init_K, 1));
++      layout_SFB = Sm1xxBlkScaledConfig::tile_atom_to_shape_SFB(cute::make_shape(init_M, init_N, init_K, 1));
+     }
+     else {
+       // Tensor shapes for Ptr-Array are initialized correctly only here.
+diff --git a/3rdparty/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp b/3rdparty/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp
+index 0000000..0000000 100644
+--- a/3rdparty/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp
++++ b/3rdparty/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp
+@@ -452,7 +452,7 @@ struct CollectiveMma<
+       stride_a = InternalStrideA{};
+       stride_b = InternalStrideB{};
+       layout_SFA = Sm1xxBlkScaledConfig::tile_atom_to_shape_SFA(cute::make_shape(init_M, init_N, init_K, 1));
+-      layout_SFB = Sm1xxBlkScaledConfig::tile_atom_to_shape_SFA(cute::make_shape(init_M, init_N, init_K, 1));
++      layout_SFB = Sm1xxBlkScaledConfig::tile_atom_to_shape_SFB(cute::make_shape(init_M, init_N, init_K, 1));
+     }
+     else {
+       // Tensor shapes for Ptr-Array are initialized correctly only here.

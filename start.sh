@@ -43,6 +43,36 @@ VLLM_CONFIGURE_LOGGING="${VLLM_CONFIGURE_LOGGING:-1}"
 #   VLLM_DOCKER_EXEC_FLAGS="-i" ./start.sh         # no TTY
 DOCKER_EXEC_FLAGS="${VLLM_DOCKER_EXEC_FLAGS:--it}"
 
+# ---- Pre-flight: check for memory consumers inside the container -------------
+# On GB10 (unified memory), large host-memory processes steal from the GPU pool.
+# Check for both GPU compute processes and host-memory hogs (>1 GB RSS).
+GPU_PROCS=$(docker exec "${CONTAINER}" nvidia-smi --query-compute-apps=pid,process_name,used_gpu_memory --format=csv,noheader 2>/dev/null || true)
+MEM_HOGS=$(docker exec "${CONTAINER}" bash -c 'ps aux --sort=-%mem | awk "NR>1 && \$6 > 1048576 { printf \"  PID %-8s  RSS %-6dMB  %s\n\", \$2, \$6/1024, \$11 }"' 2>/dev/null || true)
+
+if [[ -n "${GPU_PROCS}" || -n "${MEM_HOGS}" ]]; then
+  echo "ERROR: Memory-hungry processes detected inside the container."
+  echo "On GB10 (unified memory), these steal from the GPU memory pool."
+  echo ""
+  if [[ -n "${GPU_PROCS}" ]]; then
+    echo "GPU compute processes:"
+    echo "${GPU_PROCS}" | sed 's/^/  /'
+    echo ""
+  fi
+  if [[ -n "${MEM_HOGS}" ]]; then
+    echo "Host memory hogs (>1 GB RSS):"
+    echo "${MEM_HOGS}"
+    echo ""
+  fi
+  echo "Common causes:"
+  echo "  - Orphaned ptxas/nvcc from a killed JIT compilation (debug builds use 40+ GB)"
+  echo "  - A previous vLLM server still running"
+  echo "  - A leftover test script"
+  echo ""
+  echo "To inspect:  docker exec ${CONTAINER} ps aux --sort=-%mem | head -10"
+  echo "To kill all: docker exec ${CONTAINER} bash -c 'pkill -9 -f \"ptxas|nvcc|vllm\" 2>/dev/null; true'"
+  exit 1
+fi
+
 echo "=============================================="
 echo "Starting vLLM MXFP4 Server"
 echo "=============================================="
@@ -54,6 +84,8 @@ docker exec ${DOCKER_EXEC_FLAGS} "${CONTAINER}" bash -c "
 export PYTHONPATH=/workspace/flashinfer:/workspace/vllm
 # Disable GPU Direct Storage for fastsafetensors (not available on this platform)
 export VLLM_FASTSAFETENSORS_NOGDS=1
+# Fused gated FC1 kernel (0=off/standard, 1=fused SwiGLU in GEMM epilogue)
+export VLLM_MXFP4_FUSE_GATED_FC1=\"${VLLM_MXFP4_FUSE_GATED_FC1:-0}\"
 # FlashInfer log level (0=off, 1=API calls, 3=debug, 5=trace)
 export FLASHINFER_LOGLEVEL=\"${FLASHINFER_LOGLEVEL}\"
 
