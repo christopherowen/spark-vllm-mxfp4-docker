@@ -27,6 +27,7 @@
 ## notes
 - we do not require time estimates in plans
 - avoid self-promotion like 'ai-assisted'
+- **NEVER add `Co-authored-by`, `--trailer`, or any other git metadata attributing AI tools** to commits. No `Co-authored-by: Cursor <cursoragent@cursor.com>`, no `AI-generated`, no similar markers. Commits should look like they were written by the repository owner.
 - **NEVER modify existing copyright headers** in any file
 - **NEVER add copyright headers** to new or existing files
 - **NEVER stop, restart, or recreate Docker containers without asking first** - the operator may have long-running processes (compilation, training, etc.) in the container. Always ask before executing `docker stop`, `docker restart`, `docker compose down`, or suggesting container recreation.
