@@ -1,0 +1,54 @@
+Config: hidden=2944, inter=7680, experts=8, top_k=2, tokens=4
+
+--- Testing UNFUSED (fuse_activation=False) ---
+  OK: output shape=torch.Size([4, 2944]), abs_max=0.3906
+
+--- Testing FUSED (fuse_activation=True) ---
+[FUSED TMA UPDATE] batch=0 A=0x32ee18580 B=0xf7a7c0000000 SFA=0x32ee63680 SFB=0xf7a7cac80000 Aux=0xf7a7c0ac8000 SFAux=0xf7a7cad2c800
+[FUSED TMA DIAG] group=0 M=1 N=7680 K=2944
+[FUSED TMA DIAG] A   shape=(2944,1,1,1,1) stride=(1,2944,0,0,0)
+[FUSED TMA DIAG] B   shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[FUSED TMA DIAG] Aux shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[FUSED TMA DIAG] SFA shape=(512,1,23,1,1) stride=(1,11776,512,11776,0)
+[FUSED TMA DIAG] SFB shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+[FUSED TMA DIAG] SFAux shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+[FUSED TMA DIAG] Addrs: A=0x32ee18580 B=0xf7a7c0000000 Aux=0xf7a7c0ac8000 SFA=0x32ee63680 SFB=0xf7a7cac80000 SFAux=0xf7a7cad2c800
+[FUSED TMA UPDATE] batch=1 A=0x32ee19100 B=0xf7a7c1590000 SFA=0x32ee66480 SFB=0xf7a7cadd9000 Aux=0xf7a7c2058000 SFAux=0xf7a7cae85800
+[FUSED TMA DIAG] group=1 M=2 N=7680 K=2944
+[FUSED TMA DIAG] A   shape=(2944,2,1,1,1) stride=(1,2944,0,0,0)
+[FUSED TMA DIAG] B   shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[FUSED TMA DIAG] Aux shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[FUSED TMA DIAG] SFA shape=(512,1,23,1,1) stride=(1,11776,512,11776,0)
+[FUSED TMA DIAG] SFB shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+[FUSED TMA DIAG] SFAux shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+[FUSED TMA DIAG] Addrs: A=0x32ee19100 B=0xf7a7c1590000 Aux=0xf7a7c2058000 SFA=0x32ee66480 SFB=0xf7a7cadd9000 SFAux=0xf7a7cae85800
+[FUSED TMA UPDATE] batch=2 A=0x32ee1a800 B=0xf7a7c2b20000 SFA=0x32ee6c080 SFB=0xf7a7caf32000 Aux=0xf7a7c35e8000 SFAux=0xf7a7cafde800
+[FUSED TMA DIAG] group=2 M=2 N=7680 K=2944
+[FUSED TMA DIAG] A   shape=(2944,2,1,1,1) stride=(1,2944,0,0,0)
+[FUSED TMA DIAG] B   shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[FUSED TMA DIAG] Aux shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[FUSED TMA DIAG] SFA shape=(512,1,23,1,1) stride=(1,11776,512,11776,0)
+[FUSED TMA DIAG] SFB shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+  FAILED: SM120 Fused FC1: run failed: Error Internal (CUDA: no error) (/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/kernels/cutlass_kernels/moe_gemm/././launchers/moe_gemm_sm120_mixed_input_launcher.inl:1671)
+1       0xf7a81af96368 void tensorrt_llm::kernels::cutlass_kernels_oss::sm120_fused_act_moe_gemm_kernelLauncher<__nv_fp8_e4m3, __nv_fp4_e2m1, __nv_bfloat16, void, cute::tuple<cute::C<64>, cute::C<64>, cute::C<128> >, cute::tuple<cute::C<1>, cute::C<1>, cute::C<1> >, true>(tensorrt_llm::kernels::cutlass_kernels::TmaWarpSpecializedGroupedGemmInput, void*, long const*, long, long, int, int, CUstream_st*, int*, unsigned long*) + 4280
+2       0xf7a81b0b04f0 tensorrt_llm::kernels::cutlass_kernels::CutlassMoeFCRunner<__nv_fp8_e4m3, __nv_fp4_e2m1, __nv_bfloat16, __nv_fp8_e4m3, __nv_bfloat16, void>::gemm1_fused(tensorrt_llm::kernels::cutlass_kernels::TmaWarpSpecializedGroupedGemmInput, __nv_fp8_e4m3 const*, __nv_fp8_e4m3*, void*, long const*, __nv_fp4_e2m1 const*, float const*, unsigned char const*, unsigned char*, tensorrt_llm::kernels::cutlass_kernels::QuantParams, long, long, long, int, float const**, bool, CUstream_st*) + 624
+3       0xf7a81b0c2e40 tensorrt_llm::kernels::cutlass_kernels::CutlassMoeFCRunner<__nv_fp8_e4m3, __nv_fp4_e2m1, __nv_bfloat16, __nv_fp8_e4m3, __nv_bfloat16, void>::runMoe(void const*, void const*, bool, int const*, float const*, void const*, void const*, tensorrt_llm::kernels::cutlass_kernels::ActivationParams, void const*, void const*, tensorrt_llm::kernels::cutlass_kernels::QuantParams, long, long, long, long, int, int, char*, void*, int*, tensorrt_llm::kernels::cutlass_kernels::MOEParallelismConfig, bool, bool, tensorrt_llm::kernels::LoraParams&, bool, bool, tensorrt_llm::kernels::cutlass_kernels::MoeMinLatencyParams&, bool, CUstream_st*, bool) + 2304
+4       0xf7a81b00a60c /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N64_fusedact_mxfp4min/fused_moe_120_M64N64_fusedact_mxfp4min.so(+0x12a60c) [0xf7a81b00a60c]
+5       0xf7a81b0104c0 FusedMoeRunner::GetFunction(tvm::ffi::String const&)::{lambda(tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::Array<tvm::ffi::Tensor, void>, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, long, long, long, long, long, long, bool, bool, tvm::ffi::Optional<tvm::ffi::Array<long, void>, void>, bool, long, bool)#5}::operator()(tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::Array<tvm::ffi::Tensor, void>, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, long, long, long, long, long, long, bool, bool, tvm::ffi::Optional<tvm::ffi::Array<long, void>, void>, bool, long, bool) const + 624
+6       0xf7a81b0304d4 tvm::ffi::Function::FromTyped<FusedMoeRunner::GetFunction(tvm::ffi::String const&)::{lambda(tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::Array<tvm::ffi::Tensor, void>, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, long, long, long, long, long, long, bool, bool, tvm::ffi::Optional<tvm::ffi::Array<long, void>, void>, bool, long, bool)#5}>(FusedMoeRunner::GetFunction(tvm::ffi::String const&)::{lambda(tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::Array<tvm::ffi::Tensor, void>, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, long, long, long, long, long, long, bool, bool, tvm::ffi::Optional<tvm::ffi::Array<long, void>, void>, bool, long, bool)#5}&&)::{lambda(tvm::ffi::AnyView const*, int, tvm::ffi::Any*)#1}::operator()(tvm::ffi::AnyView const*, int, tvm::ffi::Any*) + 62916
+7       0xf7a81afec920 tvm::ffi::details::FunctionObjImpl<tvm::ffi::Function::FromTyped<FusedMoeRunner::GetFunction(tvm::ffi::String const&)::{lambda(tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::Array<tvm::ffi::Tensor, void>, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, long, long, long, long, long, long, bool, bool, tvm::ffi::Optional<tvm::ffi::Array<long, void>, void>, bool, long, bool)#5}>(FusedMoeRunner::GetFunction(tvm::ffi::String const&)::{lambda(tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::TensorView, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::Array<tvm::ffi::Tensor, void>, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, tvm::ffi::Optional<tvm::ffi::TensorView, void>, long, long, long, long, long, long, bool, bool, tvm::ffi::Optional<tvm::ffi::Array<long, void>, void>, bool, long, bool)#5}&&)::{lambda(tvm::ffi::AnyView const*, int, tvm::ffi::Any*)#1}>::SafeCall(void*, TVMFFIAny const*, int, TVMFFIAny*) + 768
+8       0xf7aad04e251c /usr/local/lib/python3.12/dist-packages/tvm_ffi/core.abi3.so(+0x5251c) [0xf7aad04e251c]
+9             0x4c535c PyObject_Call + 108
+10            0x56832c _PyEval_EvalFrameDefault + 15608
+11            0x563224 PyEval_EvalCode + 304
+12            0x59c144 python3() [0x59c144]
+13            0x680e34 python3() [0x680e34]
+14            0x680a08 _PyRun_SimpleFileObject + 404
+15            0x6807d4 _PyRun_AnyFileObject + 84
+16            0x68b7dc Py_RunMain + 732
+17            0x68b398 Py_BytesMain + 40
+18      0xf7ab72e584c4 /usr/lib/aarch64-linux-gnu/libc.so.6(+0x284c4) [0xf7ab72e584c4]
+19      0xf7ab72e58598 __libc_start_main + 152
+20            0x5f6bb0 _start + 48
+
+Done.

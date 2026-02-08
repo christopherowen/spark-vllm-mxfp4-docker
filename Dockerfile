@@ -18,7 +18,7 @@
 #
 # =============================================================================
 
-FROM nvcr.io/nvidia/pytorch:25.12-py3
+FROM nvcr.io/nvidia/pytorch:26.01-py3
 
 LABEL maintainer="MXFP4 Optimization Project"
 LABEL description="vLLM with optimized MXFP4 for DGX Spark (SM121/GB10)"
@@ -62,7 +62,7 @@ ENV CMAKE_CXX_COMPILER_LAUNCHER=ccache
 ENV CMAKE_CUDA_COMPILER_LAUNCHER=ccache
 
 # FlashInfer settings
-ENV FLASHINFER_CUDA_ARCH_LIST="12.1f"
+ENV FLASHINFER_CUDA_ARCH_LIST="12.1a"
 ENV FLASHINFER_JIT_VERBOSE=0
 ENV FLASHINFER_LOGLEVEL=0
 ENV FLASHINFER_NVCC_THREADS=4

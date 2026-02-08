@@ -432,7 +432,7 @@ Changes are immediate - no cache clearing needed.
 The JIT cache is organized by architecture and operation type:
 
 ```
-~/.cache/flashinfer/0.6.0/121a/cached_ops/
+~/.cache/flashinfer/<version>/121a/cached_ops/
 ├── fused_moe_120/           # SM120 MoE GEMM kernels (~10min to rebuild all)
 │   ├── moe_gemm_kernels_bf16_fp4.cuda.o   # MXFP4 (BF16 act)
 │   ├── moe_gemm_kernels_fp16_fp4.cuda.o   # MXFP4 (FP16 act)
@@ -446,18 +446,18 @@ The JIT cache is organized by architecture and operation type:
 
 **Full clear** (slow - rebuilds everything ~10+ min):
 ```bash
-rm -rf ~/.cache/flashinfer/0.6.0/121a/cached_ops/*
+rm -rf ~/.cache/flashinfer/*/121a/cached_ops/*
 ```
 
 **MoE-only clear** (fast - rebuilds only MoE kernels ~2-5 min):
 ```bash
 # Clear ONLY SM120 MoE GEMM kernels
-rm -rf ~/.cache/flashinfer/0.6.0/121a/cached_ops/fused_moe_120/
+rm -rf ~/.cache/flashinfer/*/121a/cached_ops/fused_moe_120*/
 ```
 
 **Inside Docker**:
 ```bash
-docker exec vllm-dev rm -rf /root/.cache/flashinfer/0.6.0/121a/cached_ops/fused_moe_120/
+docker exec vllm-dev rm -rf /root/.cache/flashinfer/*/121a/cached_ops/fused_moe_120*/
 ```
 
 Use selective clearing when iterating on MoE launcher code to save significant build time.

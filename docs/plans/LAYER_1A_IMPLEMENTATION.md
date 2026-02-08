@@ -169,7 +169,7 @@ Gated FC1 GEMM (A @ W_linear, A @ W_gate) → SwiGLU Epilogue → [M, inter] BF1
 |------|---------|
 | `cutlass_extensions/gemm/collective/sm120_blockscaled_mma_gated_array_tma.hpp` | Gated mainloop: 6-plane TMA, dual-accumulator `mma()`, inline SwigluBias |
 | `moe_gemm_sm120_mixed_input_launcher.h` | `GatedFC1SwigluParams` struct (device pointers) |
-| `moe_gemm_sm120_mixed_input_launcher.inl` | `sm120_gated_fc1_moe_gemm_kernelLauncher` |
+| `moe_gemm_sm120_mixed_input_launcher.inl` | `sm120_fused_act_moe_gemm_kernelLauncher` |
 | `cutlass_fused_moe_kernels.cuh` | Gated dispatch, upstream pointer setup, FP8 quantize via `doActivation(Identity)` |
 | `include/moe_gemm_kernels.h` | `TmaWarpSpecializedGroupedGemmInput::GatedFC1` struct |
 | `moe_gemm_tma_warp_specialized_input.cu` | Workspace allocation for gated arrays |
@@ -543,12 +543,12 @@ nsys profile --cudagraph-trace=all \
 | Inline SwigluBias | ✅ | Full formula in single-accumulator `mma()` overload |
 | Dispatch policy | ✅ | `MainloopSm120ArrayTmaWarpSpecializedBlockScaledGated` |
 | Standard `GemmUniversal` compatibility | ✅ | Single-accumulator `mma()` works with standard kernel |
-| Launcher function | ✅ | `sm120_gated_fc1_moe_gemm_kernelLauncher` - simplified, CUDA-graph safe |
+| Launcher function | ✅ | `sm120_fused_act_moe_gemm_kernelLauncher` - simplified, CUDA-graph safe |
 | Upstream pointer integration | ✅ | Gated arrays in `TmaWarpSpecializedGroupedGemmInput::GatedFC1` |
 | cudaStreamSynchronize eliminated | ✅ | Gated pointers pre-computed by upstream stride kernel |
 | cudaMemcpy eliminated | ✅ | SwigluBias params as device pointers, read on-device |
-| Interface wiring | ✅ | `FLASHINFER_GATED_FC1_KERNEL_LAUNCH` compile guard |
-| JIT flag integration | ✅ | `FLASHINFER_GATED_FC1_LAUNCH=1` env var |
+| Interface wiring | ✅ | `FLASHINFER_FUSED_ACTIVATION_KERNEL_LAUNCH` compile guard |
+| JIT flag integration | ✅ | `FLASHINFER_FUSED_ACTIVATION_LAUNCH=1` env var |
 | Weight split validation | ✅ | `test_gated_weight_split.py` - offset calculations correct |
 
 ### Pending Hardware Test
@@ -564,7 +564,7 @@ nsys profile --cudagraph-trace=all \
 
 ## Previous Blocking Issue: Epilogue Pointer Array Mismatch (RESOLVED 2026-02-02)
 
-**Original error**: When compiling with `FLASHINFER_GATED_FC1=1`, the epilogue expected `ElementD**` 
+**Original error**: When compiling with `FLASHINFER_FUSED_ACTIVATION=1`, the epilogue expected `ElementD**` 
 (array of per-expert pointers) but we passed `ElementOutput*` (single buffer).
 
 **Resolution**: Extended the launcher infrastructure to:
@@ -662,8 +662,8 @@ arrays populated by a stride-fill kernel. Modifying for gated path requires:
 3. **Modified problem shapes**: Change N from 2*inter_size to inter_size
 
 **Compile Flags Added**:
-- `FLASHINFER_GATED_FC1`: Enable gated FC1 path detection
-- `FLASHINFER_GATED_FC1_TWO_GEMM_BRINGUP`: Enable two-GEMM debug path
+- `FLASHINFER_FUSED_ACTIVATION`: Enable gated FC1 path detection
+- `FLASHINFER_FUSED_ACTIVATION_TWO_GEMM_BRINGUP`: Enable two-GEMM debug path
 
 **Current Behavior** (with flags enabled):
 - Logs activation of gated path with offset calculations
@@ -696,7 +696,7 @@ __global__ void computeGatedOffsets(
 
 ### 3. Validation Tests
 
-1. **Compile test**: Build with `-DFLASHINFER_GATED_FC1`
+1. **Compile test**: Build with `-DFLASHINFER_FUSED_ACTIVATION`
 2. **Weight split test**: `test_gated_weight_split.py` ✅ PASSING
 3. **One-layer test**: Compare gated path vs baseline (pending)
 4. **CUDA graph test**: Capture + replay (pending)
@@ -707,15 +707,15 @@ __global__ void computeGatedOffsets(
 
 ### Enabling the Gated FC1 Kernel
 
-The gated FC1 kernel is controlled by the `FLASHINFER_GATED_FC1_LAUNCH` environment variable:
+The gated FC1 kernel is controlled by the `FLASHINFER_FUSED_ACTIVATION_LAUNCH` environment variable:
 
 ```bash
 # Enable gated FC1 kernel launch
-export FLASHINFER_GATED_FC1_LAUNCH=1
+export FLASHINFER_FUSED_ACTIVATION_LAUNCH=1
 ```
 
-When enabled, the JIT compiler adds `-DFLASHINFER_GATED_FC1_KERNEL_LAUNCH` to the nvcc flags
-and creates a separate cached module with suffix `_gatedfc1`.
+When enabled, the JIT compiler adds `-DFLASHINFER_FUSED_ACTIVATION_KERNEL_LAUNCH` to the nvcc flags
+and creates a separate cached module with suffix `_fusedact`.
 
 ### Testing with vLLM
 
@@ -726,7 +726,7 @@ docker exec vllm-dev rm -rf /root/.cache/flashinfer/0.6.1/121f/cached_ops/fused_
 # Start vLLM with gated FC1 enabled
 docker exec -it vllm-dev bash -c '
 export PYTHONPATH=/workspace/flashinfer:/workspace/vllm
-export FLASHINFER_GATED_FC1_LAUNCH=1
+export FLASHINFER_FUSED_ACTIVATION_LAUNCH=1
 export FLASHINFER_LOGLEVEL=3
 
 vllm serve openai/gpt-oss-120b \
@@ -787,7 +787,7 @@ vllm serve ... --enforce-eager
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| "Falling through to standard path" | `FLASHINFER_GATED_FC1_LAUNCH` not set | Set env var before JIT |
+| "Falling through to standard path" | `FLASHINFER_FUSED_ACTIVATION_LAUNCH` not set | Set env var before JIT |
 | JIT cache not rebuilding | Old cache present | Clear `~/.cache/flashinfer/` |
 | Kernel not appearing in nsys | Not taking gated path | Check FLASHINFER_LOGLEVEL=3 logs |
 
@@ -933,7 +933,7 @@ This matches the `SwigluBiasAdaptor` in `doGatedActivation` and is required by g
 
 1. **Hardware test**: Compile and launch gated kernel on SM121
    - Clear JIT cache: `rm -rf ~/.cache/flashinfer/0.6.*/121*/cached_ops/fused_moe_120*`
-   - Set `FLASHINFER_GATED_FC1_LAUNCH=1`
+   - Set `FLASHINFER_FUSED_ACTIVATION_LAUNCH=1`
    - Check if 64×64×128 tile launches successfully after the pointer refactoring
 
 2. **If 64×64×128 still fails**: Debug TMA descriptor or implement B/Aux SMEM sharing (see Fallback section above)

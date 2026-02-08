@@ -1,0 +1,505 @@
+========= COMPUTE-SANITIZER
+Config: hidden=2944, inter=7680, experts=8, top_k=2, tokens=4
+
+--- Testing UNFUSED (fuse_activation=False) ---
+  FAILED: Ninja build failed. Ninja output:
+ninja: Entering directory `/root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N128_mxfp4min'
+[1/2] /usr/local/cuda/bin/nvcc --generate-dependencies-with-compile --dependency-output /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N128_mxfp4min/cutlass_fused_moe_instantiation.cuda.o.d -DPy_LIMITED_API=0x03090000 -D_GLIBCXX_USE_CXX11_ABI=1 -I/workspace/flashinfer/csrc/nv_internal -I/workspace/flashinfer/csrc/nv_internal/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/cutlass_extensions/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/kernels/cutlass_kernels/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/kernels/cutlass_kernels -I/root/.cache/flashinfer/0.6.3/121a/generated/cutlass_instantiations/120_M64N128_mxfp4min -isystem /usr/include/python3.12 -isystem /usr/local/cuda/include -isystem /usr/local/cuda/include/cccl -isystem /usr/local/lib/python3.12/dist-packages/tvm_ffi/include -isystem /usr/local/lib/python3.12/dist-packages/tvm_ffi/include -isystem /workspace/flashinfer/include -isystem /workspace/flashinfer/csrc -isystem /workspace/flashinfer/3rdparty/cutlass/include -isystem /workspace/flashinfer/3rdparty/cutlass/tools/util/include -isystem /workspace/flashinfer/3rdparty/spdlog/include --compiler-options=-fPIC --expt-relaxed-constexpr -static-global-template-stub=false -DFLASHINFER_ENABLE_FP8_E8M0 -DFLASHINFER_ENABLE_FP4_E2M1 -std=c++17 --threads=4 -use_fast_math -DFLASHINFER_ENABLE_F16 -DFLASHINFER_ENABLE_BF16 -DFLASHINFER_ENABLE_FP8_E4M3 -DFLASHINFER_ENABLE_FP8_E5M2 -DNDEBUG -O3 -DCOMPILE_BLACKWELL_TMA_GEMMS -DCOMPILE_BLACKWELL_SM120_TMA_GROUPED_GEMMS -DENABLE_BF16 -DENABLE_FP8 -DENABLE_FP4 -DUSING_OSS_CUTLASS_MOE_GEMM -DLOGICAL_TILE_M=64 -DLOGICAL_TILE_N=128 -DSWAP_AB=0 -gencode=arch=compute_121a,code=sm_121a -DFLASHINFER_ENABLE_FP8_E8M0 -DFLASHINFER_ENABLE_FP4_E2M1 -DFLASHINFER_FUSED_MOE_MXFP4_MINIMAL -c /workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_instantiation.cu -o /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N128_mxfp4min/cutlass_fused_moe_instantiation.cuda.o 
+FAILED: [code=255] /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N128_mxfp4min/cutlass_fused_moe_instantiation.cuda.o 
+/usr/local/cuda/bin/nvcc --generate-dependencies-with-compile --dependency-output /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N128_mxfp4min/cutlass_fused_moe_instantiation.cuda.o.d -DPy_LIMITED_API=0x03090000 -D_GLIBCXX_USE_CXX11_ABI=1 -I/workspace/flashinfer/csrc/nv_internal -I/workspace/flashinfer/csrc/nv_internal/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/cutlass_extensions/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/kernels/cutlass_kernels/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/kernels/cutlass_kernels -I/root/.cache/flashinfer/0.6.3/121a/generated/cutlass_instantiations/120_M64N128_mxfp4min -isystem /usr/include/python3.12 -isystem /usr/local/cuda/include -isystem /usr/local/cuda/include/cccl -isystem /usr/local/lib/python3.12/dist-packages/tvm_ffi/include -isystem /usr/local/lib/python3.12/dist-packages/tvm_ffi/include -isystem /workspace/flashinfer/include -isystem /workspace/flashinfer/csrc -isystem /workspace/flashinfer/3rdparty/cutlass/include -isystem /workspace/flashinfer/3rdparty/cutlass/tools/util/include -isystem /workspace/flashinfer/3rdparty/spdlog/include --compiler-options=-fPIC --expt-relaxed-constexpr -static-global-template-stub=false -DFLASHINFER_ENABLE_FP8_E8M0 -DFLASHINFER_ENABLE_FP4_E2M1 -std=c++17 --threads=4 -use_fast_math -DFLASHINFER_ENABLE_F16 -DFLASHINFER_ENABLE_BF16 -DFLASHINFER_ENABLE_FP8_E4M3 -DFLASHINFER_ENABLE_FP8_E5M2 -DNDEBUG -O3 -DCOMPILE_BLACKWELL_TMA_GEMMS -DCOMPILE_BLACKWELL_SM120_TMA_GROUPED_GEMMS -DENABLE_BF16 -DENABLE_FP8 -DENABLE_FP4 -DUSING_OSS_CUTLASS_MOE_GEMM -DLOGICAL_TILE_M=64 -DLOGICAL_TILE_N=128 -DSWAP_AB=0 -gencode=arch=compute_121a,code=sm_121a -DFLASHINFER_ENABLE_FP8_E8M0 -DFLASHINFER_ENABLE_FP4_E2M1 -DFLASHINFER_FUSED_MOE_MXFP4_MINIMAL -c /workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_instantiation.cu -o /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N128_mxfp4min/cutlass_fused_moe_instantiation.cuda.o 
+/workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh(1313): error: no instance of overloaded function "cutlass::make_cute_packed_stride" matches the argument list
+            argument types are: (tensorrt_llm::kernels::cutlass_kernels::TmaWarpSpecializedGroupedGemmInput::StrideA, cute::tuple<long, int64_t, int>)
+        cutlass::make_cute_packed_stride(TmaWarpSpecializedGroupedGemmInput::StrideA{},
+        ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(552): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(531): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(512): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(486): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(465): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(446): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(423): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(406): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(389): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(357): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(328): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(302): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(275): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(255): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(237): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(214): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(196): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(179): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT>, cute::C<1>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(149): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, cute::C<0>>, cute::array<int32_t, RankT_>, cute::array<IntT, RankT_>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(129): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, StrideIntT, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, StrideIntT, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(118): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<StrideIntT, cute::C<1>, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<StrideIntT, cute::Int<1>, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(96): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(78): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(63): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(52): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+
+/workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh(1321): error: no instance of overloaded function "cutlass::make_cute_packed_stride" matches the argument list
+            argument types are: (tensorrt_llm::kernels::cutlass_kernels::TmaWarpSpecializedGroupedGemmInput::StrideB, cute::tuple<long, int64_t, int>)
+        cutlass::make_cute_packed_stride(TmaWarpSpecializedGroupedGemmInput::StrideB{},
+        ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(552): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(531): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(512): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(486): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(465): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(446): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(423): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(406): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(389): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(357): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(328): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(302): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(275): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(255): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(237): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(214): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(196): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(179): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT>, cute::C<1>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(149): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, cute::C<0>>, cute::array<int32_t, RankT_>, cute::array<IntT, RankT_>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(129): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, StrideIntT, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, StrideIntT, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(118): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<StrideIntT, cute::C<1>, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<StrideIntT, cute::Int<1>, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(96): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(78): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(63): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(52): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+
+/workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh(1327): error: no instance of overloaded function "cutlass::make_cute_packed_stride" matches the argument list
+            argument types are: (tensorrt_llm::kernels::cutlass_kernels::TmaWarpSpecializedGroupedGemmInput::StrideD, cute::tuple<long, int64_t, int>)
+        cutlass::make_cute_packed_stride(TmaWarpSpecializedGroupedGemmInput::StrideD{},
+        ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(552): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(531): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(512): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(486): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(465): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(446): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(423): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(406): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(389): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(357): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(328): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(302): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(275): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(255): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(237): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(214): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(196): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(179): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT>, cute::C<1>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(149): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, cute::C<0>>, cute::array<int32_t, RankT_>, cute::array<IntT, RankT_>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(129): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, StrideIntT, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, StrideIntT, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(118): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<StrideIntT, cute::C<1>, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<StrideIntT, cute::Int<1>, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(96): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(78): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(63): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(52): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+
+3 errors detected in the compilation of "/workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_instantiation.cu".
+ninja: build stopped: subcommand failed.
+
+
+--- Testing FUSED (fuse_activation=True) ---
+  FAILED: Ninja build failed. Ninja output:
+ninja: Entering directory `/root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N64_fusedact_mxfp4min'
+[1/2] /usr/local/cuda/bin/nvcc --generate-dependencies-with-compile --dependency-output /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N64_fusedact_mxfp4min/cutlass_fused_moe_instantiation.cuda.o.d -DPy_LIMITED_API=0x03090000 -D_GLIBCXX_USE_CXX11_ABI=1 -I/workspace/flashinfer/csrc/nv_internal -I/workspace/flashinfer/csrc/nv_internal/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/cutlass_extensions/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/kernels/cutlass_kernels/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/kernels/cutlass_kernels -I/root/.cache/flashinfer/0.6.3/121a/generated/cutlass_instantiations/120_M64N64_fusedact_mxfp4min -isystem /usr/include/python3.12 -isystem /usr/local/cuda/include -isystem /usr/local/cuda/include/cccl -isystem /usr/local/lib/python3.12/dist-packages/tvm_ffi/include -isystem /usr/local/lib/python3.12/dist-packages/tvm_ffi/include -isystem /workspace/flashinfer/include -isystem /workspace/flashinfer/csrc -isystem /workspace/flashinfer/3rdparty/cutlass/include -isystem /workspace/flashinfer/3rdparty/cutlass/tools/util/include -isystem /workspace/flashinfer/3rdparty/spdlog/include --compiler-options=-fPIC --expt-relaxed-constexpr -static-global-template-stub=false -DFLASHINFER_ENABLE_FP8_E8M0 -DFLASHINFER_ENABLE_FP4_E2M1 -std=c++17 --threads=4 -use_fast_math -DFLASHINFER_ENABLE_F16 -DFLASHINFER_ENABLE_BF16 -DFLASHINFER_ENABLE_FP8_E4M3 -DFLASHINFER_ENABLE_FP8_E5M2 -DNDEBUG -O3 -DCOMPILE_BLACKWELL_TMA_GEMMS -DCOMPILE_BLACKWELL_SM120_TMA_GROUPED_GEMMS -DENABLE_BF16 -DENABLE_FP8 -DENABLE_FP4 -DUSING_OSS_CUTLASS_MOE_GEMM -DLOGICAL_TILE_M=64 -DLOGICAL_TILE_N=64 -DSWAP_AB=0 -gencode=arch=compute_121a,code=sm_121a -DFLASHINFER_ENABLE_FP8_E8M0 -DFLASHINFER_ENABLE_FP4_E2M1 -DFLASHINFER_FUSED_ACTIVATION -DFLASHINFER_FUSED_MOE_MXFP4_MINIMAL -c /workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_instantiation.cu -o /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N64_fusedact_mxfp4min/cutlass_fused_moe_instantiation.cuda.o 
+FAILED: [code=255] /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N64_fusedact_mxfp4min/cutlass_fused_moe_instantiation.cuda.o 
+/usr/local/cuda/bin/nvcc --generate-dependencies-with-compile --dependency-output /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N64_fusedact_mxfp4min/cutlass_fused_moe_instantiation.cuda.o.d -DPy_LIMITED_API=0x03090000 -D_GLIBCXX_USE_CXX11_ABI=1 -I/workspace/flashinfer/csrc/nv_internal -I/workspace/flashinfer/csrc/nv_internal/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/cutlass_extensions/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/kernels/cutlass_kernels/include -I/workspace/flashinfer/csrc/nv_internal/tensorrt_llm/kernels/cutlass_kernels -I/root/.cache/flashinfer/0.6.3/121a/generated/cutlass_instantiations/120_M64N64_fusedact_mxfp4min -isystem /usr/include/python3.12 -isystem /usr/local/cuda/include -isystem /usr/local/cuda/include/cccl -isystem /usr/local/lib/python3.12/dist-packages/tvm_ffi/include -isystem /usr/local/lib/python3.12/dist-packages/tvm_ffi/include -isystem /workspace/flashinfer/include -isystem /workspace/flashinfer/csrc -isystem /workspace/flashinfer/3rdparty/cutlass/include -isystem /workspace/flashinfer/3rdparty/cutlass/tools/util/include -isystem /workspace/flashinfer/3rdparty/spdlog/include --compiler-options=-fPIC --expt-relaxed-constexpr -static-global-template-stub=false -DFLASHINFER_ENABLE_FP8_E8M0 -DFLASHINFER_ENABLE_FP4_E2M1 -std=c++17 --threads=4 -use_fast_math -DFLASHINFER_ENABLE_F16 -DFLASHINFER_ENABLE_BF16 -DFLASHINFER_ENABLE_FP8_E4M3 -DFLASHINFER_ENABLE_FP8_E5M2 -DNDEBUG -O3 -DCOMPILE_BLACKWELL_TMA_GEMMS -DCOMPILE_BLACKWELL_SM120_TMA_GROUPED_GEMMS -DENABLE_BF16 -DENABLE_FP8 -DENABLE_FP4 -DUSING_OSS_CUTLASS_MOE_GEMM -DLOGICAL_TILE_M=64 -DLOGICAL_TILE_N=64 -DSWAP_AB=0 -gencode=arch=compute_121a,code=sm_121a -DFLASHINFER_ENABLE_FP8_E8M0 -DFLASHINFER_ENABLE_FP4_E2M1 -DFLASHINFER_FUSED_ACTIVATION -DFLASHINFER_FUSED_MOE_MXFP4_MINIMAL -c /workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_instantiation.cu -o /root/.cache/flashinfer/0.6.3/121a/cached_ops/fused_moe_120_M64N64_fusedact_mxfp4min/cutlass_fused_moe_instantiation.cuda.o 
+/workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh(1313): error: no instance of overloaded function "cutlass::make_cute_packed_stride" matches the argument list
+            argument types are: (tensorrt_llm::kernels::cutlass_kernels::TmaWarpSpecializedGroupedGemmInput::StrideA, cute::tuple<long, int64_t, int>)
+        cutlass::make_cute_packed_stride(TmaWarpSpecializedGroupedGemmInput::StrideA{},
+        ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(552): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(531): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(512): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(486): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(465): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(446): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(423): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(406): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(389): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(357): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(328): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(302): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(275): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(255): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(237): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(214): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(196): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(179): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT>, cute::C<1>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(149): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, cute::C<0>>, cute::array<int32_t, RankT_>, cute::array<IntT, RankT_>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(129): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, StrideIntT, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, StrideIntT, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(118): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<StrideIntT, cute::C<1>, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<StrideIntT, cute::Int<1>, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(96): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(78): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(63): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(52): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+
+/workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh(1321): error: no instance of overloaded function "cutlass::make_cute_packed_stride" matches the argument list
+            argument types are: (tensorrt_llm::kernels::cutlass_kernels::TmaWarpSpecializedGroupedGemmInput::StrideB, cute::tuple<long, int64_t, int>)
+        cutlass::make_cute_packed_stride(TmaWarpSpecializedGroupedGemmInput::StrideB{},
+        ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(552): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(531): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(512): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(486): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(465): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(446): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(423): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(406): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(389): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(357): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(328): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(302): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(275): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(255): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(237): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(214): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(196): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(179): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT>, cute::C<1>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(149): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, cute::C<0>>, cute::array<int32_t, RankT_>, cute::array<IntT, RankT_>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(129): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, StrideIntT, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, StrideIntT, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(118): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<StrideIntT, cute::C<1>, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<StrideIntT, cute::Int<1>, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(96): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(78): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(63): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(52): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+
+/workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh(1327): error: no instance of overloaded function "cutlass::make_cute_packed_stride" matches the argument list
+            argument types are: (tensorrt_llm::kernels::cutlass_kernels::TmaWarpSpecializedGroupedGemmInput::StrideD, cute::tuple<long, int64_t, int>)
+        cutlass::make_cute_packed_stride(TmaWarpSpecializedGroupedGemmInput::StrideD{},
+        ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(552): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(531): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(512): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<cute::C<1>, IntT>, IntT, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(486): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 5UL>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(465): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>, cute::C<0>>, cute::array<int32_t, 4UL>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(446): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>, cute::C<0>>, cute::array<int32_t, 3UL>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(423): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(406): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(389): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(357): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(328): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(302): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, cute::Stride<IntT, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(275): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT, IntT>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(255): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT, IntT>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(237): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::Stride<cute::C<1>, IntT>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(214): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 5UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(196): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT, IntT>, cute::C<1>>, cute::array<IntT, 4UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(179): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<cute::Stride<IntT, IntT>, cute::C<1>>, cute::array<IntT, 3UL>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(149): note #3322-D: number of parameters of function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, cute::C<0>>, cute::array<int32_t, RankT_>, cute::array<IntT, RankT_>, cutlass::conv::Operator)" does not match the call
+  make_cute_packed_stride(
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(129): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, StrideIntT, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, StrideIntT, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(118): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<StrideIntT, cute::C<1>, cute::C<0>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<StrideIntT, cute::Int<1>, cute::Int<0>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(96): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(78): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>, int64_t>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>, int64_t> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(63): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<cute::C<1>, IntT>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<cute::Int<1>, IntT> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+/workspace/flashinfer/3rdparty/cutlass/tools/util/include/cutlass/util/packed_stride.hpp(52): note #3326-D: function template "cutlass::make_cute_packed_stride(cute::Stride<IntT, cute::C<1>>, cute::tuple<int, int, int>)" does not match because argument #2 does not match parameter
+  make_cute_packed_stride(cute::Stride<IntT, cute::Int<1>> s, cute::Shape<int,int,int> shape_MKL) {
+  ^
+
+3 errors detected in the compilation of "/workspace/flashinfer/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_instantiation.cu".
+ninja: build stopped: subcommand failed.
+
+
+Done.
+========= ERROR SUMMARY: 0 errors

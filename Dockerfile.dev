@@ -19,7 +19,7 @@
 #
 # =============================================================================
 
-FROM nvcr.io/nvidia/pytorch:25.12-py3
+FROM nvcr.io/nvidia/pytorch:26.01-py3
 
 LABEL maintainer="DGX Spark Development"
 LABEL description="Development image for vLLM + FlashInfer iteration"
@@ -63,7 +63,7 @@ ENV CMAKE_CXX_COMPILER_LAUNCHER=ccache
 ENV CMAKE_CUDA_COMPILER_LAUNCHER=ccache
 
 # FlashInfer - CRITICAL: 12.1a enables hardware FP4 path
-ENV FLASHINFER_CUDA_ARCH_LIST="12.1f"
+ENV FLASHINFER_CUDA_ARCH_LIST="12.1a"
 ENV FLASHINFER_JIT_VERBOSE=0
 ENV FLASHINFER_LOGLEVEL=0
 ENV FLASHINFER_NVCC_THREADS=4
@@ -94,6 +94,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && pip install uv \
     && pip uninstall -y flash-attn 2>/dev/null || true  # Remove NGC flash-attn to avoid operator conflicts
+
+# =============================================================================
+# Nsight Systems upgrade (2026.1.1 - better SM12x and CUDA graph tracing)
+# =============================================================================
+
+RUN curl -fsSL https://developer.download.nvidia.com/devtools/repos/ubuntu2404/arm64/nvidia.pub \
+        | gpg --dearmor -o /usr/share/keyrings/nvidia-devtools.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/nvidia-devtools.gpg] https://developer.download.nvidia.com/devtools/repos/ubuntu2404/arm64/ /" \
+        > /etc/apt/sources.list.d/nvidia-devtools.list && \
+    apt-get update -qq && \
+    apt-get install -y --no-install-recommends nsight-systems-cli-2026.1.1 && \
+    ln -sf /opt/nvidia/nsight-systems-cli/2026.1.1/target-linux-sbsa-armv8/nsys /usr/local/cuda/bin/nsys && \
+    rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
 # Workspace setup

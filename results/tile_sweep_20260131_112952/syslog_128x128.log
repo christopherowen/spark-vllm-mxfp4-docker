@@ -1,5 +1,0 @@
-2026-01-31T11:30:01.675262+01:00 localhost CRON[251116]: (root) CMD ([ -x /etc/init.d/anacron ] && if [ ! -d /run/systemd/system ]; then /usr/sbin/invoke-rc.d anacron start >/dev/null; fi)
-2026-01-31T11:30:04.461439+01:00 localhost systemd[1]: Starting sysstat-collect.service - system activity accounting tool...
-2026-01-31T11:30:04.482539+01:00 localhost systemd[1]: sysstat-collect.service: Deactivated successfully.
-2026-01-31T11:30:04.482737+01:00 localhost systemd[1]: Finished sysstat-collect.service - system activity accounting tool.
-2026-01-31T11:30:46.420177+01:00 localhost wpa_supplicant[1797]: wlP9s9: CTRL-EVENT-REGDOM-CHANGE init=DRIVER type=INTERSECTION

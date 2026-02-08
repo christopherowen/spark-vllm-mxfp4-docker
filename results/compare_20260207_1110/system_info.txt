@@ -1,0 +1,17 @@
+=== GPU ===
+NVIDIA GB10, 580.126.09, [N/A]
+
+=== CUDA ===
+Build cuda_13.1.r13.1/compiler.37061995_0
+
+=== nsys ===
+NVIDIA Nsight Systems version 2026.1.1.204-261137176666v0
+
+=== Python ===
+Python 3.12.3
+
+=== vLLM ===
+0.14.0rc1.dev374+gaf090071b.d20260206
+
+=== FlashInfer ===
+/workspace/flashinfer/flashinfer/__init__.py

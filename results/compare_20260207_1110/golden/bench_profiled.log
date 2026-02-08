@@ -1,0 +1,28 @@
+==============================================
+vLLM MXFP4 Profiler (cudaProfilerApi capture)
+==============================================
+Model: openai/gpt-oss-120b
+Endpoint: http://0.0.0.0:8000
+Profile output: /tmp/nsys_profile/golden
+gpu-memory-utilization: 0.60 (reduced for nsys CUPTI overhead)
+==============================================
+
+=== Launching vLLM under nsys (detached) ===
+
+=== Waiting for server ===
+  Still waiting... (60s)
+  Still waiting... (120s)
+  Still waiting... (180s)
+  Still waiting... (240s)
+  Still waiting... (300s)
+  Still waiting... (360s)
+  Still waiting... (420s)
+  Still waiting... (480s)
+  Still waiting... (540s)
+  Still waiting... (600s)
+  Still waiting... (660s)
+  Still waiting... (720s)
+  Still waiting... (780s)
+  Still waiting... (840s)
+  Still waiting... (900s)
+ERROR: Server did not become ready within 900s

@@ -1,0 +1,40 @@
+Config: hidden=2944, inter=7680, experts=8, top_k=2, tokens=4
+
+--- Testing UNFUSED (fuse_activation=False) ---
+  OK: output shape=torch.Size([4, 2944]), abs_max=0.3906
+
+--- Testing FUSED (fuse_activation=True) ---
+[GATED TMA UPDATE] batch=0 A=0x32ee18580 B=0xeb6020000000 SFA=0x32ee63680 SFB=0xeb602ac80000 Aux=0xeb6020ac8000 SFAux=0xeb602ad2c800
+[GATED TMA DIAG] group=0 M=1 N=7680 K=2944
+[GATED TMA DIAG] A   shape=(2944,1,1,1,1) stride=(1,2944,0,0,0)
+[GATED TMA DIAG] B   shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[GATED TMA DIAG] Aux shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[GATED TMA DIAG] SFA shape=(512,1,23,1,1) stride=(1,11776,512,11776,0)
+[GATED TMA DIAG] SFB shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+[GATED TMA DIAG] SFAux shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+[GATED TMA DIAG] Addrs: A=0x32ee18580 B=0xeb6020000000 Aux=0xeb6020ac8000 SFA=0x32ee63680 SFB=0xeb602ac80000 SFAux=0xeb602ad2c800
+[GATED TMA UPDATE] batch=1 A=0x32ee19100 B=0xeb6021590000 SFA=0x32ee66480 SFB=0xeb602ad2c800 Aux=0xeb6022058000 SFAux=0xeb602add9000
+[GATED TMA DIAG] group=1 M=2 N=7680 K=2944
+[GATED TMA DIAG] A   shape=(2944,2,1,1,1) stride=(1,2944,0,0,0)
+[GATED TMA DIAG] B   shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[GATED TMA DIAG] Aux shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[GATED TMA DIAG] SFA shape=(512,1,23,1,1) stride=(1,11776,512,11776,0)
+[GATED TMA DIAG] SFB shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+[GATED TMA DIAG] SFAux shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+[GATED TMA DIAG] Addrs: A=0x32ee19100 B=0xeb6021590000 Aux=0xeb6022058000 SFA=0x32ee66480 SFB=0xeb602ad2c800 SFAux=0xeb602add9000
+[GATED TMA UPDATE] batch=2 A=0x32ee1a800 B=0xeb6022b20000 SFA=0x32ee6c080 SFB=0xeb602add9000 Aux=0xeb60235e8000 SFAux=0xeb602ae85800
+[GATED TMA DIAG] group=2 M=2 N=7680 K=2944
+[GATED TMA DIAG] A   shape=(2944,2,1,1,1) stride=(1,2944,0,0,0)
+[GATED TMA DIAG] B   shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[GATED TMA DIAG] Aux shape=(2944,7680,1,1,1) stride=(0,1472,0,0,0)
+[GATED TMA DIAG] SFA shape=(512,1,23,1,1) stride=(1,11776,512,11776,0)
+[GATED TMA DIAG] SFB shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+[GATED TMA DIAG] SFAux shape=(512,60,23,1,1) stride=(1,11776,512,706560,0)
+  FAILED: CUDA error: an illegal instruction was encountered
+Search for `cudaErrorIllegalInstruction' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+
+Done.
