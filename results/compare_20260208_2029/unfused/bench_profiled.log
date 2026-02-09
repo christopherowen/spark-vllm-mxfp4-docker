@@ -1,0 +1,89 @@
+==============================================
+vLLM MXFP4 Profiler (cudaProfilerApi capture)
+==============================================
+Model: openai/gpt-oss-120b
+Endpoint: http://0.0.0.0:8000
+Profile output: /tmp/nsys_profile/unfused
+gpu-memory-utilization: 0.60 (reduced for nsys CUPTI overhead)
+==============================================
+
+=== Launching vLLM under nsys (detached) ===
+
+=== Waiting for server ===
+  Still waiting... (60s)
+Server ready after 100s
+
+=== Warmup ===
+Warmup done
+
+=== Starting profiler ===
+Profiler started
+
+=== Benchmark (bench.sh) ===
+llama-benchy (0.2.1)
+Date: 2026-02-08 19:36:04
+Benchmarking model: gpt-oss-120b at http://localhost:8000/v1
+Concurrency levels: [1]
+Loading text from cache: /root/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
+Total tokens available in text corpus: 140865
+Warming up...
+Warmup (User only) complete. Delta: 65 tokens (Server: 86, Local: 21)
+Warmup (System+Empty) complete. Delta: 69 tokens (Server: 90, Local: 21)
+Measuring latency using mode: api...
+Average latency (api): 1.27 ms
+Running test: pp=2048, tg=32, depth=0, concurrency=1
+  Run 1/3 (batch size 1)...
+  Run 2/3 (batch size 1)...
+  Run 3/3 (batch size 1)...
+Running test: pp=2048, tg=128, depth=0, concurrency=1
+  Run 1/3 (batch size 1)...
+  Run 2/3 (batch size 1)...
+  Run 3/3 (batch size 1)...
+Running test: pp=2048, tg=512, depth=0, concurrency=1
+  Run 1/3 (batch size 1)...
+  Run 2/3 (batch size 1)...
+  Run 3/3 (batch size 1)...
+Running test: pp=8192, tg=32, depth=0, concurrency=1
+  Run 1/3 (batch size 1)...
+  Run 2/3 (batch size 1)...
+  Run 3/3 (batch size 1)...
+Running test: pp=8192, tg=128, depth=0, concurrency=1
+  Run 1/3 (batch size 1)...
+  Run 2/3 (batch size 1)...
+  Run 3/3 (batch size 1)...
+Running test: pp=8192, tg=512, depth=0, concurrency=1
+  Run 1/3 (batch size 1)...
+  Run 2/3 (batch size 1)...
+  Run 3/3 (batch size 1)...
+Printing results in MD format:
+
+
+
+| model        |   test |              t/s |     peak t/s |       ttfr (ms) |    est_ppt (ms) |   e2e_ttft (ms) |
+|:-------------|-------:|-----------------:|-------------:|----------------:|----------------:|----------------:|
+| gpt-oss-120b | pp2048 |  4829.71 ± 61.76 |              |   425.38 ± 5.47 |   424.11 ± 5.47 |   478.22 ± 5.45 |
+| gpt-oss-120b |   tg32 |     58.32 ± 0.16 | 60.41 ± 0.17 |                 |                 |                 |
+| gpt-oss-120b | pp2048 |  4884.61 ± 44.59 |              |   420.58 ± 3.85 |   419.31 ± 3.85 |   473.31 ± 4.41 |
+| gpt-oss-120b |  tg128 |     58.30 ± 0.02 | 59.00 ± 0.00 |                 |                 |                 |
+| gpt-oss-120b | pp2048 |  4859.17 ± 51.49 |              |   422.79 ± 4.47 |   421.52 ± 4.47 |   475.63 ± 4.74 |
+| gpt-oss-120b |  tg512 |     57.65 ± 0.34 | 59.00 ± 0.00 |                 |                 |                 |
+| gpt-oss-120b | pp8192 | 6377.67 ± 146.45 |              | 1286.44 ± 29.99 | 1285.17 ± 29.99 | 1341.58 ± 30.19 |
+| gpt-oss-120b |   tg32 |     56.24 ± 0.09 | 58.25 ± 0.09 |                 |                 |                 |
+| gpt-oss-120b | pp8192 |  6461.15 ± 15.44 |              |  1269.17 ± 3.03 |  1267.89 ± 3.03 |  1323.68 ± 3.10 |
+| gpt-oss-120b |  tg128 |     56.07 ± 0.48 | 57.00 ± 0.00 |                 |                 |                 |
+| gpt-oss-120b | pp8192 |   6451.85 ± 8.11 |              |  1270.99 ± 1.60 |  1269.72 ± 1.60 |  1325.54 ± 2.41 |
+| gpt-oss-120b |  tg512 |     55.54 ± 0.12 | 57.00 ± 0.00 |                 |                 |                 |
+
+llama-benchy (0.2.1)
+date: 2026-02-08 19:36:04 | latency mode: api
+
+=== Stopping profiler ===
+Profiler stopped
+
+=== Stopping server ===
++-----------------------------------------------------------------------------------------+
+
+Done.
+==============================================
+Profile saved to: /tmp/nsys_profile/unfused.nsys-rep
+==============================================

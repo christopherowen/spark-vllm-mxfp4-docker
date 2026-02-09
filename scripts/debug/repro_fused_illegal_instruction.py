@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Minimal repro for CUDA illegal instruction with fuse_activation=True.
+"""Minimal repro for fused-kernel debugging.
 
 Run under compute-sanitizer:
     CUDA_LAUNCH_BLOCKING=1 compute-sanitizer --tool memcheck python3 repro_fused_illegal_instruction.py
+    compute-sanitizer --tool initcheck python3 repro_fused_illegal_instruction.py --mode unfused
 """
+import argparse
 import os
 import sys
 
@@ -11,6 +13,11 @@ import sys
 os.environ.setdefault("CUDA_LAUNCH_BLOCKING", "1")
 sys.path.insert(0, '/workspace/flashinfer')
 sys.path.insert(0, '/workspace/vllm')
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--mode', choices=['both', 'unfused', 'fused'], default='both',
+                    help='Which path(s) to test')
+args = parser.parse_args()
 
 import torch
 from flashinfer import mxfp4_quantize, mxfp8_quantize
@@ -81,52 +88,110 @@ topk_weights = torch.full((num_tokens, top_k), 1.0 / top_k, device=device, dtype
 fake_scale = torch.ones(num_experts, device=device)
 quant_scales = [fc1_scale, fake_scale, fc2_scale, fake_scale]
 
-# First run UNFUSED to verify setup
-print("\n--- Testing UNFUSED (fuse_activation=False) ---")
-try:
-    raw_unfused = cutlass_fused_moe(
-        input=x_quant,
-        token_selected_experts=topk_ids,
-        token_final_scales=topk_weights,
-        fc1_expert_weights=fc1_weights,
-        fc2_expert_weights=fc2_weights,
-        output_dtype=torch.bfloat16,
-        activation_type=ActivationType.Swiglu,
-        use_mxfp8_act_scaling=True,
-        input_sf=x_scale,
-        quant_scales=quant_scales,
-        fuse_activation=False,
-        enable_pdl=False,
-    )
-    out_unfused = normalize_moe_output(raw_unfused)
-    torch.cuda.synchronize()
-    print(f"  OK: output shape={out_unfused.shape}, "
-          f"abs_max={out_unfused.float().abs().max().item():.4f}")
-except Exception as e:
-    print(f"  FAILED: {e}")
+# SwiGLU parameters matching gpt-oss-120b:
+# gate' = clamp(alpha * gate + beta, limit)
+# output = gate' * sigmoid(gate') * linear
+swiglu_alpha_val = 1.702
+swiglu_beta_val = 1.0
+swiglu_limit_val = 7.0
+swiglu_alpha = torch.tensor([swiglu_alpha_val] * num_experts, dtype=torch.float32, device=device)
+swiglu_beta = torch.tensor([swiglu_beta_val] * num_experts, dtype=torch.float32, device=device)
+swiglu_limit = torch.tensor([swiglu_limit_val] * num_experts, dtype=torch.float32, device=device)
 
-# Now run FUSED
-print("\n--- Testing FUSED (fuse_activation=True) ---")
-try:
-    raw_fused = cutlass_fused_moe(
-        input=x_quant,
-        token_selected_experts=topk_ids,
-        token_final_scales=topk_weights,
-        fc1_expert_weights=fc1_weights,
-        fc2_expert_weights=fc2_weights,
-        output_dtype=torch.bfloat16,
-        activation_type=ActivationType.Swiglu,
-        use_mxfp8_act_scaling=True,
-        input_sf=x_scale,
-        quant_scales=quant_scales,
-        fuse_activation=True,
-        enable_pdl=False,
-    )
-    out_fused = normalize_moe_output(raw_fused)
-    torch.cuda.synchronize()
-    print(f"  OK: output shape={out_fused.shape}, "
-          f"abs_max={out_fused.float().abs().max().item():.4f}")
-except Exception as e:
-    print(f"  FAILED: {e}")
+print(f"SwiGLU params: alpha={swiglu_alpha_val}, beta={swiglu_beta_val}, limit={swiglu_limit_val}")
+
+out_unfused = None
+out_fused = None
+
+if args.mode in ('both', 'unfused'):
+    print("\n--- Testing UNFUSED (fuse_activation=False) ---")
+    try:
+        raw_unfused = cutlass_fused_moe(
+            input=x_quant,
+            token_selected_experts=topk_ids,
+            token_final_scales=topk_weights,
+            fc1_expert_weights=fc1_weights,
+            fc2_expert_weights=fc2_weights,
+            output_dtype=torch.bfloat16,
+            activation_type=ActivationType.Swiglu,
+            use_mxfp8_act_scaling=True,
+            input_sf=x_scale,
+            quant_scales=quant_scales,
+            swiglu_alpha=swiglu_alpha,
+            swiglu_beta=swiglu_beta,
+            swiglu_limit=swiglu_limit,
+            fuse_activation=False,
+            enable_pdl=False,
+        )
+        out_unfused = normalize_moe_output(raw_unfused)
+        torch.cuda.synchronize()
+        print(f"  OK: output shape={out_unfused.shape}, "
+              f"abs_max={out_unfused.float().abs().max().item():.4f}")
+    except Exception as e:
+        print(f"  FAILED: {e}")
+
+if args.mode in ('both', 'fused'):
+    print("\n--- Testing FUSED (fuse_activation=True) ---")
+    try:
+        raw_fused = cutlass_fused_moe(
+            input=x_quant,
+            token_selected_experts=topk_ids,
+            token_final_scales=topk_weights,
+            fc1_expert_weights=fc1_weights,
+            fc2_expert_weights=fc2_weights,
+            output_dtype=torch.bfloat16,
+            activation_type=ActivationType.Swiglu,
+            use_mxfp8_act_scaling=True,
+            input_sf=x_scale,
+            quant_scales=quant_scales,
+            swiglu_alpha=swiglu_alpha,
+            swiglu_beta=swiglu_beta,
+            swiglu_limit=swiglu_limit,
+            fuse_activation=True,
+            enable_pdl=False,
+        )
+        out_fused = normalize_moe_output(raw_fused)
+        torch.cuda.synchronize()
+        print(f"  OK: output shape={out_fused.shape}, "
+              f"abs_max={out_fused.float().abs().max().item():.4f}")
+    except Exception as e:
+        print(f"  FAILED: {e}")
+
+# --- Numerical comparison (fused vs unfused) ---
+if out_unfused is not None and out_fused is not None:
+    print("\n--- Numerical Comparison (fused vs unfused) ---")
+    diff = (out_fused.float() - out_unfused.float()).abs()
+    max_diff = diff.max().item()
+    mean_diff = diff.mean().item()
+    unfused_abs_max = out_unfused.float().abs().max().item()
+    fused_abs_max = out_fused.float().abs().max().item()
+    rel_diff = max_diff / max(unfused_abs_max, 1e-10)
+
+    print(f"  Unfused abs_max:  {unfused_abs_max:.6f}")
+    print(f"  Fused   abs_max:  {fused_abs_max:.6f}")
+    print(f"  Max abs diff:     {max_diff:.6f}")
+    print(f"  Mean abs diff:    {mean_diff:.6f}")
+    print(f"  Relative diff:    {rel_diff:.6f}")
+
+    # Check for NaN/Inf
+    has_nan = out_fused.isnan().any().item() or out_unfused.isnan().any().item()
+    has_inf = out_fused.isinf().any().item() or out_unfused.isinf().any().item()
+    if has_nan:
+        print("  WARNING: NaN detected in output!")
+    if has_inf:
+        print("  WARNING: Inf detected in output!")
+
+    # Tolerance check — FP4 quantization introduces noise up to ~0.02 in typical cases.
+    # Use atol=0.02 which captures expected FP4 rounding error.
+    close = torch.allclose(out_fused.float(), out_unfused.float(), rtol=1e-2, atol=0.02)
+    if close:
+        print("  PASS: fused and unfused outputs match (rtol=1e-2, atol=0.02)")
+    else:
+        print("  FAIL: fused and unfused outputs DO NOT match!")
+        # Print per-element comparison for first few differences
+        mask = diff > 0.02
+        n_diff = mask.sum().item()
+        print(f"  Elements exceeding atol=0.02: {n_diff}/{diff.numel()} "
+              f"({100*n_diff/diff.numel():.1f}%)")
 
 print("\nDone.")

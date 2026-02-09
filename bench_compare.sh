@@ -11,7 +11,7 @@
 # forks during JIT compilation and fails to capture CUDA kernel data.
 #
 # Golden SHAs come from Dockerfile (pinned, known-good configuration).
-# Current code is mxfp4_v3 branch (all work committed).
+# Current code is mxfp4_v4 branch (all work committed).
 #
 # Usage:
 #   ./bench_compare.sh              # Run all 3 variants
@@ -44,14 +44,54 @@ RESULTS="$SCRIPT_DIR/results/compare_${TS}"
 # Which variants to run (default: all)
 VARIANTS="${1:-all}"
 
-# Current branch (all repos should be on mxfp4_v3 with clean trees)
-CURRENT_BRANCH="mxfp4_v3"
+# Current branch (all repos should be on mxfp4_v4 with clean trees)
+CURRENT_BRANCH="mxfp4_v4"
 
 # =============================================================================
 # Helper functions
 # =============================================================================
 
 log() { echo "[$(date +%H:%M:%S)] $*"; }
+
+# GPU temperature threshold (Celsius) — benchmark won't start until GPU is at or below this.
+GPU_TEMP_THRESHOLD="${GPU_TEMP_THRESHOLD:-45}"
+
+gpu_temp() {
+    docker exec "$CONTAINER" nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader 2>/dev/null | tr -d ' '
+}
+
+record_temp() {
+    local label="$1"    # e.g., "pre_clean", "post_clean", "pre_profiled", "post_profiled"
+    local dir="$2"
+    local temp
+    temp=$(gpu_temp)
+    log "  GPU temp ($label): ${temp}C"
+    echo "$label: ${temp}C  $(date -Iseconds)" >> "$dir/gpu_temps.txt"
+}
+
+wait_for_cooldown() {
+    local temp
+    temp=$(gpu_temp)
+    if [ "$temp" -le "$GPU_TEMP_THRESHOLD" ] 2>/dev/null; then
+        log "  GPU temp ${temp}C <= ${GPU_TEMP_THRESHOLD}C threshold, proceeding"
+        return 0
+    fi
+    log "  GPU temp ${temp}C > ${GPU_TEMP_THRESHOLD}C, waiting for cooldown..."
+    local waited=0
+    while [ $waited -lt 600 ]; do
+        sleep 10
+        waited=$((waited + 10))
+        temp=$(gpu_temp)
+        if [ "$temp" -le "$GPU_TEMP_THRESHOLD" ] 2>/dev/null; then
+            log "  GPU cooled to ${temp}C after ${waited}s, proceeding"
+            return 0
+        fi
+        if [ $((waited % 60)) -eq 0 ]; then
+            log "  Still cooling... ${temp}C (${waited}s)"
+        fi
+    done
+    log "  WARNING: GPU still ${temp}C after 600s, proceeding anyway"
+}
 
 stop_server() {
     log "Stopping server..."
@@ -225,6 +265,10 @@ run_variant() {
 
     log "[$variant] Phase 1: Clean benchmark (start.sh + bench.sh)..."
 
+    # Truncate server log to prevent stale data from previous variant's nsys
+    # output leaking into this variant's log file.
+    docker exec "$CONTAINER" truncate -s 0 /tmp/vllm_server.log 2>/dev/null || true
+
     # Start server in background (detached), log to /tmp/vllm_server.log
     VLLM_MXFP4_FUSE_ACTIVATION="$fuse_val" \
     VLLM_DOCKER_EXEC_FLAGS="-d" \
@@ -239,10 +283,19 @@ run_variant() {
             > /dev/null 2>&1 || true
         sleep 2
 
+        # Wait for GPU to cool down after warmup before measuring
+        wait_for_cooldown
+
+        # Record GPU temp before benchmark
+        record_temp "pre_clean" "$dir"
+
         # Run clean benchmark
         log "[$variant] Running bench.sh..."
         VLLM_DOCKER_EXEC_FLAGS="-i" \
             "$SCRIPT_DIR/bench.sh" 2>&1 | tee "$dir/bench_clean.log" || true
+
+        # Record GPU temp after benchmark
+        record_temp "post_clean" "$dir"
     else
         log "[$variant] ERROR: Server failed to start for clean benchmark"
         echo "SERVER_FAILED_TO_START" > "$dir/bench_clean.log"
@@ -255,21 +308,43 @@ run_variant() {
     # JIT cache is now warm from Phase 1.
     stop_server
 
+    # Wait for GPU to cool down before profiled benchmark
+    wait_for_cooldown
+
     log "[$variant] Phase 2: Profiled benchmark (start-profile.sh)..."
+    # Remove stale nsys output so nsys uses the exact filename we request
+    docker exec "$CONTAINER" bash -c "rm -f /tmp/nsys_profile/${variant}*" 2>/dev/null || true
+    # Truncate server log before profiled run too
+    docker exec "$CONTAINER" truncate -s 0 /tmp/vllm_server.log 2>/dev/null || true
+
+    record_temp "pre_profiled" "$dir"
+
     VLLM_MXFP4_FUSE_ACTIVATION="$fuse_val" \
     PROFILE_OUTPUT="/tmp/nsys_profile/${variant}" \
         "$SCRIPT_DIR/start-profile.sh" 2>&1 | tee "$dir/bench_profiled.log" || true
 
+    record_temp "post_profiled" "$dir"
+
     # Copy server log from profiled run
     docker cp "$CONTAINER:/tmp/vllm_server.log" "$dir/server_profiled.log" 2>/dev/null || true
 
-    # Copy nsys profile and sqlite out of container
-    docker cp "$CONTAINER:/tmp/nsys_profile/${variant}.nsys-rep" "$dir/profile.nsys-rep" 2>/dev/null \
-        && log "[$variant] Copied profile.nsys-rep ($(du -h "$dir/profile.nsys-rep" | cut -f1))" \
-        || log "[$variant] WARNING: Could not copy nsys-rep"
-    docker cp "$CONTAINER:/tmp/nsys_profile/${variant}.sqlite" "$dir/profile.sqlite" 2>/dev/null \
-        && log "[$variant] Copied profile.sqlite ($(du -h "$dir/profile.sqlite" | cut -f1))" \
-        || log "[$variant] WARNING: Could not copy sqlite"
+    # Copy nsys profile and sqlite out of container.
+    # nsys appends a numeric suffix (e.g., ".1") to output filenames, so try
+    # both "${variant}.nsys-rep" and "${variant}.1.nsys-rep".
+    if docker cp "$CONTAINER:/tmp/nsys_profile/${variant}.nsys-rep" "$dir/profile.nsys-rep" 2>/dev/null; then
+        log "[$variant] Copied profile.nsys-rep ($(du -h "$dir/profile.nsys-rep" | cut -f1))"
+    elif docker cp "$CONTAINER:/tmp/nsys_profile/${variant}.1.nsys-rep" "$dir/profile.nsys-rep" 2>/dev/null; then
+        log "[$variant] Copied profile.nsys-rep from .1 suffix ($(du -h "$dir/profile.nsys-rep" | cut -f1))"
+    else
+        log "[$variant] WARNING: Could not copy nsys-rep"
+    fi
+    if docker cp "$CONTAINER:/tmp/nsys_profile/${variant}.sqlite" "$dir/profile.sqlite" 2>/dev/null; then
+        log "[$variant] Copied profile.sqlite ($(du -h "$dir/profile.sqlite" | cut -f1))"
+    elif docker cp "$CONTAINER:/tmp/nsys_profile/${variant}.1.sqlite" "$dir/profile.sqlite" 2>/dev/null; then
+        log "[$variant] Copied profile.sqlite from .1 suffix ($(du -h "$dir/profile.sqlite" | cut -f1))"
+    else
+        log "[$variant] WARNING: Could not copy sqlite"
+    fi
 
     stop_server
 
@@ -327,20 +402,20 @@ python3 -c "import flashinfer; print(flashinfer.__file__)" 2>/dev/null || echo "
 log "System info saved to $RESULTS/system_info.txt"
 
 # ---- Run 1: Golden ----
-if [[ "$VARIANTS" == "all" || "$VARIANTS" == "golden" ]]; then
-    checkout_golden
-    run_variant golden 0
-    restore_current
-fi
+#if [[ "$VARIANTS" == "all" || "$VARIANTS" == "golden" ]]; then
+#    checkout_golden
+#    run_variant golden 0
+#    restore_current
+#fi
 
-# ---- Run 2: Current Unfused ----
-if [[ "$VARIANTS" == "all" || "$VARIANTS" == "unfused" ]]; then
-    run_variant unfused 0
-fi
-
-# ---- Run 3: Current Fused ----
+# ---- Run 2: Current Fused ----
 if [[ "$VARIANTS" == "all" || "$VARIANTS" == "fused" ]]; then
     run_variant fused 1
+fi
+
+# ---- Run 3: Current Unused ----
+if [[ "$VARIANTS" == "all" || "$VARIANTS" == "unfused" ]]; then
+    run_variant unfused 0
 fi
 
 log ""

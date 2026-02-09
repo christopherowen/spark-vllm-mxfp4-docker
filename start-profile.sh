@@ -160,15 +160,52 @@ docker exec "$CONTAINER" curl -sf -X POST http://localhost:$PORT/stop_profile
 echo "Profiler stopped"
 sleep 2
 
-# ---- Stop server (nsys writes profile on exit) ------------------------------
+# ---- Stop server, let nsys finish processing ---------------------------------
+# IMPORTANT: Kill only vllm processes, NOT nsys. nsys needs to stay alive to
+# detect that the profiled process exited, process the trace, generate stats,
+# and write the .nsys-rep / .sqlite files. stop.sh uses pkill -9 on nsys which
+# truncates the profile output.
 echo ""
-echo "=== Stopping server ==="
+echo "=== Stopping server (keeping nsys alive) ==="
 
-"$SCRIPT_DIR/stop.sh" 2>&1 | tail -3
+docker exec "$CONTAINER" bash -c '
+    # Kill vllm processes (children of nsys) — nsys detects child exit
+    pkill -9 -f "VLLM::EngineCore" 2>/dev/null || true
+    pkill -9 -f "vllm" 2>/dev/null || true
+    pkill -9 -f "resource_tracker" 2>/dev/null || true
+    pkill -9 -f "multiprocessing" 2>/dev/null || true
+' 2>&1 | tail -3
 
-# Wait for nsys to finish writing the profile
-sleep 5
+# Wait for nsys to finish processing the profile and exit naturally.
+# nsys --stats=true prints kernel stats and writes .nsys-rep + .sqlite on exit.
+echo "Waiting for nsys to finish processing..."
+NSYS_WAIT=0
+NSYS_MAX_WAIT=120
+while [ $NSYS_WAIT -lt $NSYS_MAX_WAIT ]; do
+    if ! docker exec "$CONTAINER" pgrep -f "nsys|NsightSystems" > /dev/null 2>&1; then
+        echo "nsys exited after ${NSYS_WAIT}s"
+        break
+    fi
+    sleep 2
+    NSYS_WAIT=$((NSYS_WAIT + 2))
+    if [ $((NSYS_WAIT % 20)) -eq 0 ]; then
+        echo "  Still waiting for nsys... (${NSYS_WAIT}s)"
+    fi
+done
 
+if [ $NSYS_WAIT -ge $NSYS_MAX_WAIT ]; then
+    echo "WARNING: nsys did not exit within ${NSYS_MAX_WAIT}s, killing it"
+    docker exec "$CONTAINER" bash -c '
+        pkill -9 -f "nsys-tee" 2>/dev/null || true
+        pkill -9 -f "nsys-launcher" 2>/dev/null || true
+        pkill -9 -f "NsightSystems" 2>/dev/null || true
+        nsys shutdown 2>/dev/null || true
+    '
+    sleep 2
+fi
+
+echo ""
+echo "Done."
 echo "=============================================="
 echo "Profile saved to: ${PROFILE_OUTPUT}.nsys-rep"
 echo "=============================================="

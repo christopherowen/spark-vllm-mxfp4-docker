@@ -12,5 +12,5 @@ llama-benchy \
     --latency-mode api \
     --pp 2048 8192 \
     --tg 32 128 512 \
-    --runs 3
+    --runs 10
 "

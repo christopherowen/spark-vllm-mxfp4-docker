@@ -1365,58 +1365,79 @@ output[i] = silu(acc_gate[i]) * acc_linear[i];
 
 ## Current Implementation Status (2026-02-08)
 
-### What Has Been Built
+### Architecture: Sequential SMEM Reuse (v4)
 
-The Layer 1A implementation has been significantly rewritten since the initial plan. The
-architecture departed from the EVT-based epilogue approach and instead uses a **gated
-mainloop** pattern. The following is the actual state of the code.
+The Layer 1A implementation has gone through two major design iterations:
 
-#### Architecture: Gated Mainloop (not EVT Epilogue)
+1. **v3 (6-plane simultaneous load)**: Failed due to SM120 N%128 hardware constraint.
+   Loading all 6 TMA planes (A, B, Aux, SFA, SFB, SFAux) simultaneously required
+   N_tile=64, which is incompatible with SM120 block-scaled MMA.
 
-The plan originally described three approaches for the two-accumulator pattern (Section
-"Implementation: Two-Accumulator Approach"). The implementation chose **Option C: Custom
-collective** — a new CUTLASS `CollectiveMma` specialization that maintains two accumulator
-fragments within the mainloop itself.
+2. **v4 (sequential SMEM reuse)**: Current approach. Uses only 4 SMEM planes (same as
+   unfused kernel) and performs two sequential K-reduction passes, reusing `smem_B` and
+   `smem_SFB` for both linear and gate weights.
 
-| Aspect | Plan (2026-02-01) | Actual Implementation |
-|--------|--------------------|-----------------------|
-| **SwiGLU location** | Epilogue (EVT visitor tree) | Intended: inline in mainloop; actual: not yet applied |
-| **Kernel type** | Custom `GemmUniversalGated` | Standard `GemmUniversal` with gated mainloop |
-| **Epilogue** | Custom `Sm90EVT`-based gated epilogue | Standard epilogue (stores pre-fused result) |
-| **Two accumulators** | EVT receives both at epilogue time | Mainloop computes both GEMMs, one `mma()` overload per pattern |
-| **Tile shape** | Assumed 64×128 or 128×128 | Fixed 64×64×128 (SMEM constraint) |
+| Aspect | v3 (6-plane, failed) | v4 (sequential reuse, current) |
+|--------|----------------------|--------------------------------|
+| **SMEM planes** | 6 (A, B, Aux, SFA, SFB, SFAux) | 4 (A, B, SFA, SFB) — same as unfused |
+| **Tile shape** | 64×64×128 | 128×128×128 |
+| **SMEM usage** | ~71 KB | ~95 KB (fits in 101 KB) |
+| **N_tile constraint** | FAIL (64 % 128 != 0) | OK (128 % 128 == 0) |
+| **Illegal instructions** | 27 crashes | 0 |
+| **K-tile iteration** | Normal | Doubled (2 phases per work tile) |
+| **SwiGLU location** | Not implemented | Inline in mma() (register-level) |
 
-#### Key Files Created/Modified
+### How Sequential SMEM Reuse Works
+
+The key insight is that the A operand is the same for both the linear and gate GEMMs.
+Instead of loading both B matrices simultaneously (requiring 6 SMEM planes), we iterate
+over K tiles twice, loading the gate weights into the same SMEM slots used by the linear
+weights:
+
+```
+Phase 1 (K tiles 0..k_real-1):
+  Load A + B_linear + SFA + SFB_linear into SMEM
+  Accumulate: accum += A @ B_linear (linear GEMM)
+
+Phase 2 (K tiles k_real..2*k_real-1):
+  Load A + B_gate + SFA + SFAux into SMEM (reusing smem_B / smem_SFB)
+  Accumulate: accum_gate += A @ B_gate (gate GEMM)
+
+After both phases:
+  output = SiLU(accum_gate) * accum  (SwiGLU in registers)
+```
+
+This is implemented by:
+
+1. **Doubling `k_tile_count`**: The CUTLASS kernel header
+   (`sm90_gemm_array_tma_warpspecialized_pingpong.hpp`) detects gated mainloops via an
+   `IsGatedMainloop` SFINAE trait and multiplies `k_tile_count` by 2 at all 5
+   producer/consumer advance points.
+
+2. **Single-loop conditional loading**: The `load()` method iterates `k_tile_count`
+   times (= 2 × k_real). A conditional `if (k < k_real)` selects between loading
+   B_linear/SFB_linear (phase 1) and B_gate/SFAux (phase 2) into the same SMEM slots.
+   `cute::ForwardCoordIterator` does NOT wrap modulo shape — it increments past end.
+   The load loop explicitly resets `k_tile_iter.coord` at `k == k_real` so phase 2
+   re-reads the same A/SFA K-tile coordinates.
+
+3. **Two-phase `mma()`**: Phase 1 accumulates into `accum`, phase 2 accumulates into
+   `accum_gate`. Both use the same `run_mma_phase` helper that operates on whatever
+   data the pipeline placed in SMEM. SwiGLU is applied in registers after both phases.
+
+### Key Files (mxfp4_v4 branches)
 
 | File | Role |
 |------|------|
-| `sm120_blockscaled_mma_gated_array_tma.hpp` | **New.** Gated `CollectiveMma` specialization. 6-plane TMA load (A, B, Aux, SFA, SFB, SFAux). Dual-accumulator and single-accumulator `mma()` overloads. |
-| `moe_gemm_sm120_mixed_input_launcher.inl` | **Modified.** Added `DEFINE_SM120_MXFP4_GATED_NAMESPACE` macro and `sm120_fused_act_moe_gemm_kernelLauncher` function. |
-| `cutlass_fused_moe_kernels.cuh` | **Modified.** Added `gemm1_fused()` dispatch, `computeStridesFusedActivationKernel` for per-expert TMA strides, fused vs unfused branching in `runMoe()`. |
-| `moe_kernels.h` | **Modified.** Header declarations for `gemm1_fused` and fused stride kernel. |
-| `flashinfer_cutlass_fused_moe_binding.cu` | **Modified.** Python binding passes `fuse_activation` bool through. |
-| `core.py` | **Modified.** `fuse_activation` parameter, fused tile selector, JIT module caching with `_fusedact` suffix. |
+| `sm120_blockscaled_mma_gated_array_tma.hpp` | Gated `CollectiveMma` specialization. Removed `smem_Aux`/`smem_SFAux` from TensorStorage. Single-loop two-phase `load()`. Two-phase `mma()` with inline SwiGLU. |
+| `sm90_gemm_array_tma_warpspecialized_pingpong.hpp` | **Patched.** Added `IsGatedMainloop` SFINAE trait. `k_tile_count *= 2` at 5 locations (producer, consumer, all advance points). |
+| `moe_gemm_sm120_mixed_input_launcher.inl` | Gated namespace uses 128×128×128 tiles. Auto-carved stages. `computeGatedPointersAndStrides` kernel for per-expert B_gate/SFAux pointers. |
+| `cutlass_fused_moe_kernels.cuh` | `gemm1_fused()` dispatch, `computeStridesFusedActivationKernel` for per-expert TMA strides, fused vs unfused branching in `runMoe()`. Tile shape updated to 128×128×128. |
+| `moe_kernels.h` | Header declarations for `gemm1_fused` and fused stride kernel. |
+| `flashinfer_cutlass_fused_moe_binding.cu` | Python binding passes `fuse_activation` bool through. |
+| `core.py` | `SM120_FUSED_SUPPORTED_TILE_MN = ((128, 128),)`. `fuse_activation` parameter. JIT module caching with `_fusedact` suffix. |
 
-#### Gated Mainloop Design
-
-The `CollectiveMma` specialization at `sm120_blockscaled_mma_gated_array_tma.hpp` uses:
-
-1. **Composition pattern** for `Params`: wraps `Base::Params` + `AuxParams` + `SwigluBiasParams`
-   (trivially copyable, no inheritance)
-2. **6-plane TMA loading**: A, B, Aux, SFA, SFB, SFAux loaded per pipeline stage
-3. **A-operand reuse**: A and SFA fragments are loaded once and used for both the linear
-   (`accum0 += A @ B`) and gate (`accum1 += A @ Aux`) GEMMs, saving ~33% activation bandwidth
-4. **Two `mma()` overloads**:
-   - Dual-accumulator: computes both GEMMs, returns `accum0` and `accum1` separately
-   - Single-accumulator: intended to apply SwiGLU inline and return fused result;
-     **currently only computes the linear GEMM (gate result discarded)**
-
-The single-accumulator `mma()` is what `GemmUniversal` calls. The intent was for it to
-internally call the dual-accumulator version, apply `SiLU(gate) * linear`, and return
-the fused result through the standard epilogue. Comments in the code describe this, but
-the SwiGLU application is **not yet implemented** in the single-accumulator overload.
-
-#### Dispatch Chain
+### Dispatch Chain
 
 ```
 Python:  cutlass_fused_moe(fuse_activation=True)
@@ -1425,139 +1446,62 @@ Python:  cutlass_fused_moe(fuse_activation=True)
   → C++:   runMoe(fuse_activation=true)
            → gemm1_fused()
              1. computeStridesFusedActivationKernel (per-expert TMA strides)
-             2. sm120_fused_act_moe_gemm_kernelLauncher (6-plane GEMM)
+             2. sm120_fused_act_moe_gemm_kernelLauncher (4-plane GEMM, 2x K-tiles)
              3. doActivation(Identity) for post-processing
 ```
 
-Tile selection uses `SM120_FUSED_SUPPORTED_TILE_MN = ((64, 64),)` — only one tile
-is supported. The fused path is incompatible with `swap_ab` tiles.
-
-#### SMEM Budget
+### SMEM Budget
 
 ```
-SM121 SMEM limit:    101,376 bytes (99 KB)
-64×64×128 fused:      71,680 bytes (fits with 29 KB margin)
-64×128×128 fused:   ~112,640 bytes (exceeds by 11 KB)
-128×128×128 fused:  ~129,024 bytes (exceeds by 28 KB)
+SM121 SMEM limit:        101,376 bytes (99 KB)
+128×128×128 fused:        95,232 bytes (fits with 6 KB margin)
+128×128×128 unfused:     ~66,000 bytes (same 4 planes, fewer stages)
 ```
 
-The 64×64×128 tile was chosen as the only configuration that fits 6 TMA planes
-in SMEM. All configurations with N_tile ≥ 128 exceed the SMEM limit.
+Sequential SMEM reuse achieves SMEM footprint close to the unfused kernel because both
+use exactly 4 TMA planes per pipeline stage.
 
-### Blocking Issue: N_tile=64 vs SM120 Hardware Constraint
+### Current Debugging: All-Zero Output
 
-**The fused kernel crashes with `CUDA error: an illegal instruction was encountered`.**
+The kernel compiles and runs without crashes or memory errors, but produces all-zero
+output. Debugging is in progress:
 
-Root cause analysis (2026-02-08) identified this as a **hardware alignment constraint**,
-not a software bug:
+| What | Status |
+|------|--------|
+| Compilation | OK (~44s release mode) |
+| CUTLASS `initialize()` | Returns Success |
+| CUTLASS `run()` | Returns Success |
+| CUDA errors | None |
+| compute-sanitizer memcheck | 0 errors |
+| Output values | **All zeros** |
 
-**SM120 block-scaled MMA requires N_tile to be a multiple of 128.** The fused kernel
-uses N_tile=64, which violates this constraint.
+**Current diagnostic**: SwiGLU has been bypassed in `mma()` to test whether the raw
+linear GEMM (phase 1 alone) produces non-zero output. This isolates:
+- If still zero → issue is in GEMM computation (pipeline sync, TMA loads, or accum init)
+- If non-zero → issue is in two-phase coordination or SwiGLU application
 
-#### Evidence
+### Resolved Issues (v4)
 
-1. **FlashInfer PR #2261** (merged 2025-12-24): "Fix CUTLASS FP8 gemm correctness issue
-   on SM120/SM121 for shapes where N is not divisible by ScaleGranularityN." Confirms
-   that SM120 requires N dimensions to be multiples of 128 due to hardware constraints.
-   Fix: pad N to next multiple of 128 at the Python level.
+| Issue | Resolution |
+|-------|------------|
+| N_tile=64 illegal instruction | Sequential SMEM reuse → 128×128×128 tiles |
+| 49-minute debug build | Compile in release mode (~44s) |
+| Missing `cudaFuncSetAttribute` | Added SMEM opt-in for >48KB |
+| `ForwardCoordIterator` assignment | Single-loop design (no iterator save/restore) |
+| Kernel schedule mismatch | Gated dispatch inherits SM120-specific schedule from base |
 
-2. **FlashInfer PR #2495** (merged 2026-02-05): "fix: add support check for gemm config
-   for cutlass moe." Adds runtime check that output N meets 256-bit alignment for
-   NoSmem epilogue.
+### Previous v3 Issues (Historical, for Reference)
 
-3. **MOE_TILE_INSTABILITY.md**: Documents `64×64` tiles as `FAIL` with
-   "SharedMemory / cudaFuncSetAttribute | TMA descriptor errors."
-
-4. **CUTLASS source** (`sm120_blockscaled_mma_array_tma.hpp:145`): Scale factor B tile
-   is padded to 128 (`TileN_SFB = ceil_div(N_tile, 128) * 128`), confirming the hardware
-   minimum. While CUTLASS allows N_tile < 128 to *compile* (via `IsCtaNSmall` conditional
-   assertions), the SM120 MMA hardware still requires 128-wide operand blocks at runtime.
-
-5. **SASS disassembly**: All crashes at offset `+0xb9c0` on a `UTMALDG.4D` instruction —
-   a TMA load that fails because the N-dimension layout doesn't meet hardware alignment.
-
-#### The SMEM Dilemma
-
-The reason the fused kernel uses N_tile=64 is SMEM pressure from 6 TMA planes:
+The 6-plane design (v3) hit a fundamental SMEM vs hardware constraint:
 
 | Tile Shape | SMEM (6 planes) | Fits in 101 KB? | N_tile % 128 |
 |------------|-----------------|-----------------|--------------|
 | 64×64×128 | ~71 KB | Yes | **FAIL** (64) |
-| 64×128×128 | ~112 KB | **No** (over by 11 KB) | OK (128) |
-| 128×128×128 | ~129 KB | **No** (over by 28 KB) | OK (128) |
+| 64×128×128 | ~112 KB | **No** (+11 KB) | OK |
+| 128×128×128 | ~129 KB | **No** (+28 KB) | OK |
 
-**No tile shape with N_tile ≥ 128 fits in SMEM with 6 TMA planes and 2 pipeline stages.**
-
-### Revised Path Forward
-
-The original plan assumed tile shapes would "just work." The N%128 constraint creates a
-fundamental architectural choice:
-
-#### Option A: Reduce Pipeline Stages (kGatedStages = 1)
-
-With 1 pipeline stage instead of 2, a 64×128×128 tile would use ~56 KB (fits). But:
-- CUTLASS TMA pipelining typically requires ≥2 stages for double-buffering
-- Performance impact of losing software pipelining is significant
-- May not be supported by the SM120 warp-specialized schedule
-
-#### Option B: Fuse Only for N_tile=128 Tiles (128×128)
-
-Use the fused mainloop only with 128×128×128 tiles. The unfused 128×128 kernel uses
-~66 KB; adding Aux + SFAux (~33 KB) totals ~99 KB, which *might* fit in 101 KB.
-
-- **Requires verification**: Actual SMEM usage may exceed estimate due to padding/alignment
-- If it fits, this is the cleanest path — same tile as the unfused kernel
-- Loses fused activation for smaller tiles (fall back to separate SwiGLU)
-
-#### Option C: Alternative Fusion Strategy — Epilogue-Only SwiGLU
-
-Instead of the 6-plane gated mainloop (which doubles B/SFB operands), compute FC1 as a
-single N-wide GEMM (standard 4-plane mainloop) and apply SwiGLU in the epilogue by
-accessing both halves of the accumulator.
-
-This is the approach originally dismissed in the plan (Section "The Single-Accumulator
-Problem") because each tile only sees one half of the N columns. However, for tiles
-where N_tile covers both linear and gate columns simultaneously (e.g., interleaved
-32-column block layout as used by cuDNN), it becomes viable.
-
-**Trade-off**: Requires weight layout change to interleave linear/gate columns.
-
-#### Option D: Separate-Launch Dual GEMM (Plan's Option A)
-
-Revert to the plan's Option A: two separate GEMM launches sharing the A operand,
-followed by an epilogue that combines both results. Each GEMM uses standard 4-plane
-tiles (no SMEM pressure), and the SwiGLU is a pointwise fused epilogue on the combined
-output.
-
-**Trade-off**: Two GEMM launches instead of one, but each uses proven tile shapes.
-
-#### Recommendation
-
-**Option B (128×128 fused tile) should be tried first** — it's the smallest change from
-the current codebase. If SMEM verification shows it fits, the only changes needed are:
-
-1. Change `TILE_M_VAL=128, TILE_N_VAL=128` in the gated namespace macro
-2. Update `SM120_FUSED_SUPPORTED_TILE_MN` to `((128, 128),)`
-3. Clear JIT cache and recompile
-
-If 128×128 doesn't fit, **Option D** is the most pragmatic fallback.
-
-### Other Issues Found
-
-1. **Kernel schedule mismatch**: The gated dispatch policy uses
-   `KernelPtrArrayTmaWarpSpecializedPingpong` (SM90-generic) instead of
-   `KernelPtrArrayTmaWarpSpecializedPingpongBlockScaledSm120` (SM120-specific).
-   The unfused kernel uses the SM120-specific schedule. This should be corrected
-   regardless of which tile option is chosen.
-
-2. **SwiGLU not applied**: The single-accumulator `mma()` overload (which
-   `GemmUniversal` calls) currently only computes the linear GEMM and discards
-   the gate result. SwiGLU application (`SiLU(gate) * linear`) must be implemented
-   in this overload, or a custom epilogue must be used.
-
-3. **`cudaFuncSetAttribute(MaxDynamicSharedMemorySize)` was missing**: The fused
-   launcher was missing the opt-in call for >48KB SMEM. This was identified as a
-   contributing factor but is not the root cause (the N%128 constraint is).
+No tile with N≥128 fit in SMEM with 6 TMA planes. The sequential reuse approach
+eliminated this dilemma entirely.
 
 ---
 
@@ -1565,6 +1509,7 @@ If 128×128 doesn't fit, **Option D** is the most pragmatic fallback.
 
 | Date | Author | Changes |
 |------|--------|---------|
-| 2026-02-08 | — | Added "Current Implementation Status" section: documented actual gated mainloop architecture, identified N_tile=64 vs SM120 N%128 hardware constraint as root cause of illegal instruction crash, revised path forward with 4 options |
+| 2026-02-08 | — | Rewrote "Current Implementation Status" for v4 sequential SMEM reuse design. Documented two-phase K iteration, 128×128×128 tile success, all-zero output debugging. Moved v3 6-plane history to "Previous v3 Issues" subsection. |
+| 2026-02-08 | — | (Earlier) Added v3 status: documented gated mainloop architecture, identified N_tile=64 vs SM120 N%128 hardware constraint, proposed 4 resolution options |
 | 2026-02-01 | — | Added spike plan, created validation script |
 | 2026-01-31 | — | Initial document |

@@ -1,0 +1,11 @@
+========= COMPUTE-SANITIZER
+Config: hidden=2944, inter=7680, experts=8, top_k=2, tokens=4
+
+--- Testing UNFUSED (fuse_activation=False) ---
+  OK: output shape=torch.Size([4, 2944]), abs_max=0.3906
+
+--- Testing FUSED (fuse_activation=True) ---
+  OK: output shape=torch.Size([4, 2944]), abs_max=0.3906
+
+Done.
+========= ERROR SUMMARY: 0 errors
