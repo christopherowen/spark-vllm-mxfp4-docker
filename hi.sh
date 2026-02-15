@@ -3,7 +3,7 @@ set -euo pipefail
 
 BASE_URL="${VLLM_BASE_URL:-http://localhost:8000/v1}"
 MODEL="${VLLM_MODEL:-gpt-oss-120b}"
-MAX_TOKENS="${VLLM_MAX_TOKENS:-64}"
+MAX_TOKENS="${VLLM_MAX_TOKENS:-256}"
 TIMEOUT_SECS="${VLLM_TIMEOUT_SECS:-30}"
 
 curl -sS --fail-with-body \
@@ -20,4 +20,4 @@ curl -sS --fail-with-body \
     "max_tokens": '$MAX_TOKENS',
     "temperature": 0,
     "stream": false
-  }'
+  }' #| jq -r '.choices[0].message.content'

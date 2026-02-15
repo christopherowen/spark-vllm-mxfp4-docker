@@ -1,0 +1,20 @@
+variant: unfused
+timestamp: 2026-02-09T02:49:48+01:00
+fuse_activation: 0
+
+git:
+  flashinfer: 8117a7b91c8eb80a3fd2a002151d727685b9b701 (mxfp4_v4)
+  vllm:       8409484b4ea610d500f095331b4199ecfa4f35ec (mxfp4_v4)
+  cutlass:    7554e4a32b15929289aa80e8bc8a4e5f6f779407
+
+server_config:
+  model: openai/gpt-oss-120b
+  quantization: mxfp4
+  mxfp4_backend: CUTLASS
+  mxfp4_layers: moe,qkv,o,lm_head
+  attention_backend: FLASHINFER
+  kv_cache_dtype: fp8
+  gpu_memory_utilization: 0.70 (clean) / 0.60 (profiled)
+  max_model_len: 131072
+  max_num_seqs: 2
+  max_num_batched_tokens: 8192

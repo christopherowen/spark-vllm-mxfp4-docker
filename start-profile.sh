@@ -149,9 +149,9 @@ echo "Profiler started"
 sleep 1
 
 echo ""
-echo "=== Benchmark (bench.sh) ==="
+echo "=== Benchmark (bench-short.sh) ==="
 
-VLLM_DOCKER_EXEC_FLAGS="-i" "$SCRIPT_DIR/bench.sh"
+VLLM_DOCKER_EXEC_FLAGS="-i" "$SCRIPT_DIR/bench-short.sh"
 
 echo ""
 echo "=== Stopping profiler ==="

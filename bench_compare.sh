@@ -44,7 +44,7 @@ RESULTS="$SCRIPT_DIR/results/compare_${TS}"
 # Which variants to run (default: all)
 VARIANTS="${1:-all}"
 
-# Current branch (all repos should be on mxfp4_v4 with clean trees)
+# Current branch for flashinfer/vllm/cutlass repos
 CURRENT_BRANCH="mxfp4_v4"
 
 # =============================================================================
@@ -299,6 +299,11 @@ run_variant() {
     else
         log "[$variant] ERROR: Server failed to start for clean benchmark"
         echo "SERVER_FAILED_TO_START" > "$dir/bench_clean.log"
+        docker cp "$CONTAINER:/tmp/vllm_server.log" "$dir/server_clean.log" 2>/dev/null || true
+        stop_server
+        save_metadata "$variant" "$fuse_val"
+        log "[$variant] Aborting variant — server failed to start"
+        return 1
     fi
 
     # Copy server log (captures startup errors even in detached mode)
@@ -410,12 +415,18 @@ log "System info saved to $RESULTS/system_info.txt"
 
 # ---- Run 2: Current Fused ----
 if [[ "$VARIANTS" == "all" || "$VARIANTS" == "fused" ]]; then
-    run_variant fused 1
+    if ! run_variant fused 1; then
+        log "FATAL: 'fused' variant failed to start, aborting."
+        exit 1
+    fi
 fi
 
-# ---- Run 3: Current Unused ----
+# ---- Run 3: Current Unfused ----
 if [[ "$VARIANTS" == "all" || "$VARIANTS" == "unfused" ]]; then
-    run_variant unfused 0
+    if ! run_variant unfused 0; then
+        log "FATAL: 'unfused' variant failed to start, aborting."
+        exit 1
+    fi
 fi
 
 log ""

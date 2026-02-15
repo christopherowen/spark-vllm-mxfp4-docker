@@ -328,6 +328,31 @@ sudo rm -rf .cache/
 
 ---
 
+## SASSquatch - GPU ISA Auditor
+
+**"Rare sightings of forbidden ISA"** -- inspired by [sandsifter](https://github.com/xoreaxeaxeax/sandsifter).
+
+SASSquatch systematically probes the SM121 GPU instruction set to discover what the hardware actually supports versus what is documented. It operates in three phases:
+
+1. **Phase 1 - PTX Compilation Audit**: Compiles ~359 PTX instruction variants across SM90/SM100/SM121 targets to map architecture-specific support
+2. **Phase 2 - SASS Opcode Discovery**: Disassembles compiled cubins to build a mapping of PTX instructions to native SASS opcodes
+3. **Phase 3 - SASS Binary Audit**: Patches SASS opcodes in compiled cubins and executes them on the GPU to find undocumented or anomalous instructions
+
+```bash
+# Run inside the dev container
+docker exec -it vllm-dev python3 scripts/sasquatch/sasquatch.py --phase 1 --target sm_121a
+```
+
+PTX probes target **PTX ISA 9.1** (CUDA 13.1). See [scripts/sasquatch/](scripts/sasquatch/) for source.
+
+### Key References
+
+- [PTX ISA Specification (v9.1)](https://docs.nvidia.com/cuda/parallel-thread-execution/) - Authoritative PTX instruction reference
+- [PTX ISA Release Notes](https://docs.nvidia.com/cuda/parallel-thread-execution/#release-notes) - New instructions added per PTX/CUDA version
+- [SASS Instruction Set Reference (Blackwell)](https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference) - Native GPU instruction documentation
+
+---
+
 ## Documentation
 
 - [AGENTS.md](AGENTS.md) - Project context and AI assistant guide

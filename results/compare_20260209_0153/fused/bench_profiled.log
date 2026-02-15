@@ -1,0 +1,13 @@
+==============================================
+vLLM MXFP4 Profiler (cudaProfilerApi capture)
+==============================================
+Model: openai/gpt-oss-120b
+Endpoint: http://0.0.0.0:8000
+Profile output: /tmp/nsys_profile/fused
+gpu-memory-utilization: 0.60 (reduced for nsys CUPTI overhead)
+==============================================
+
+=== Launching vLLM under nsys (detached) ===
+
+=== Waiting for server ===
+  Still waiting... (60s)

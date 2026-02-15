@@ -1,0 +1,62 @@
+==============================================
+vLLM MXFP4 Profiler (cudaProfilerApi capture)
+==============================================
+Model: openai/gpt-oss-120b
+Endpoint: http://0.0.0.0:8000
+Profile output: /tmp/nsys_profile/unfused
+gpu-memory-utilization: 0.60 (reduced for nsys CUPTI overhead)
+==============================================
+
+=== Launching vLLM under nsys (detached) ===
+
+=== Waiting for server ===
+  Still waiting... (60s)
+Server ready after 100s
+
+=== Warmup ===
+Warmup done
+
+=== Starting profiler ===
+Profiler started
+
+=== Benchmark (bench-short.sh) ===
+llama-benchy (0.2.1)
+Date: 2026-02-09 07:47:35
+Benchmarking model: gpt-oss-120b at http://localhost:8000/v1
+Concurrency levels: [1]
+Loading text from cache: /root/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
+Total tokens available in text corpus: 140865
+Warming up...
+Warmup (User only) complete. Delta: 65 tokens (Server: 86, Local: 21)
+Warmup (System+Empty) complete. Delta: 69 tokens (Server: 90, Local: 21)
+Measuring latency using mode: api...
+Average latency (api): 1.62 ms
+Running test: pp=2048, tg=32, depth=0, concurrency=1
+  Run 1/1 (batch size 1)...
+Running test: pp=8192, tg=32, depth=0, concurrency=1
+  Run 1/1 (batch size 1)...
+Printing results in MD format:
+
+
+
+| model        |   test |            t/s |     peak t/s |      ttfr (ms) |   est_ppt (ms) |   e2e_ttft (ms) |
+|:-------------|-------:|---------------:|-------------:|---------------:|---------------:|----------------:|
+| gpt-oss-120b | pp2048 | 4657.50 ± 0.00 |              |  441.34 ± 0.00 |  439.72 ± 0.00 |   493.42 ± 0.00 |
+| gpt-oss-120b |   tg32 |   58.28 ± 0.00 | 60.37 ± 0.00 |                |                |                 |
+| gpt-oss-120b | pp8192 | 5146.22 ± 0.00 |              | 1593.46 ± 0.00 | 1591.85 ± 0.00 |  1647.18 ± 0.00 |
+| gpt-oss-120b |   tg32 |   56.65 ± 0.00 | 58.68 ± 0.00 |                |                |                 |
+
+llama-benchy (0.2.1)
+date: 2026-02-09 07:47:35 | latency mode: api
+
+=== Stopping profiler ===
+Profiler stopped
+
+=== Stopping server (keeping nsys alive) ===
+Waiting for nsys to finish processing...
+nsys exited after 8s
+
+Done.
+==============================================
+Profile saved to: /tmp/nsys_profile/unfused.nsys-rep
+==============================================
