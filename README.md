@@ -374,6 +374,6 @@ PTX probes target **PTX ISA 9.1** (CUDA 13.1). See [scripts/sasquatch/](scripts/
 
 | Component | SHA | Repository |
 |-----------|-----|------------|
-| vLLM | `45954168` | [christopherowen/vllm](https://github.com/christopherowen/vllm/tree/mxfp4_v2) |
-| FlashInfer | `1660ee8d` | [christopherowen/flashinfer](https://github.com/christopherowen/flashinfer/tree/mxfp4_v2) |
-| CUTLASS | `11af7f02` | [christopherowen/cutlass](https://github.com/christopherowen/cutlass/tree/mxfp4_v2) |
+| vLLM | `045293d82b832229560ac4a13152a095af603b6e` | [christopherowen/vllm](https://github.com/christopherowen/vllm/tree/mxfp4_v2) |
+| FlashInfer | `f349e52496a72a00d8c4ac02c7a1e38523ff7194` | [christopherowen/flashinfer](https://github.com/christopherowen/flashinfer/tree/mxfp4_v2) |
+| CUTLASS | `fede53000a962b46e05bafe0c86311778caeb380` | [christopherowen/cutlass](https://github.com/christopherowen/cutlass/tree/mxfp4_v2) |
