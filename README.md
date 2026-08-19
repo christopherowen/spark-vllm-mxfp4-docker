@@ -1,3 +1,5 @@
+
+
 # GPT-OSS-120B with MXFP4 on DGX Spark (SM121/GB10)
 
 **Fastest gpt-oss-120b inference on DGX Spark** - **72 tok/s decode with TP=2**, beating all competitors.
@@ -24,7 +26,7 @@ Based on: https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch
 
 - ✅ **TP=2 achieves 72 tok/s** - 20% faster than single-node
 - ✅ Decode consistently **57-60 tok/s** on TP=1 across all context lengths
-- ✅ Prefill scales well: 1.8K → 4.6K → 6.6K t/s as batch size increases
+- ✅ Prefill scales well: 1.8K → 4.6K → 6.6K t/s as context length increases
 
 ### vs Competitors
 
